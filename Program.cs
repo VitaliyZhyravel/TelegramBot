@@ -8,7 +8,8 @@ builder.Services.AddControllers();
 
 builder.Configuration.AddUserSecrets<Program>();
 
-builder.Services.AddSingleton<TelegramBotClient>(new TelegramBotClient(builder.Configuration["TelegramBotToken"]!));
+var token = Environment.GetEnvironmentVariable("TELEGRAM_TOKEN");
+builder.Services.AddSingleton<TelegramBotClient>(new TelegramBotClient(token!));
 
 var app = builder.Build();
 
