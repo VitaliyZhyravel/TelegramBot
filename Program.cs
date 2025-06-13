@@ -6,7 +6,9 @@ var builder = WebApplication.CreateBuilder(args);
 
 builder.Services.AddControllers();
 
-builder.Services.AddSingleton<TelegramBotClient>(new TelegramBotClient(builder.Configuration["TelegramBot:Token"]!));
+builder.Configuration.AddUserSecrets<Program>();
+
+builder.Services.AddSingleton<TelegramBotClient>(new TelegramBotClient(builder.Configuration["TelegramBotToken"]!));
 
 var app = builder.Build();
 
