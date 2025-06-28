@@ -9,11 +9,15 @@ out/
 
 mono_crash.*
 
+*.db
+*.db-shm
+*.db-wal
 Thumbs.db
 ehthumbs.db
 
 Desktop.ini
 
+.vs
 .vscode/
 
 .idea/
@@ -33,3 +37,4 @@ secrets.json
 *.orig
 
 wwwroot/
+/TelegramBot.Api/.gitignore
