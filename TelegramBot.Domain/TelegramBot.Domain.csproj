@@ -6,10 +6,4 @@
     <Nullable>enable</Nullable>
   </PropertyGroup>
 
-  <ItemGroup>
-    <Compile Remove="User\**" />
-    <EmbeddedResource Remove="User\**" />
-    <None Remove="User\**" />
-  </ItemGroup>
-
 </Project>
