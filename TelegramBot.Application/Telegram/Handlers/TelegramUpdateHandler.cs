@@ -1,5 +1,4 @@
 ﻿using Microsoft.Extensions.Logging;
-using Telegram.Bot.Polling;
 using Telegram.Bot.Types;
 using Telegram.Bot.Types.Enums;
 using TelegramBot.Application.Interfaces.Handlers;
@@ -43,6 +42,10 @@ public class TelegramUpdateHandler : Interfaces.Handlers.IUpdateHandler
                     await handler.HandleMessageAsync(callbackQuery, cancellationToken);
                 }
             }
+        }
+        else
+        {
+
         }
     }
 }
