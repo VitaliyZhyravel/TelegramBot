@@ -14,7 +14,33 @@ public class OpenAiBetalgoiService : IOpenAiService
         _openAi = openAi;
     }
 
-    public async Task<OperationResult<string>> GenerateInsurance(UserSession userSession)
+    public async Task<OperationResultGeneric<string>> GenerateGreetingsAsync()
+    {
+        var response = await _openAi.ChatCompletion.CreateCompletion(new ChatCompletionCreateRequest
+        {
+            Messages = new List<ChatMessage>
+            {
+                ChatMessage.FromSystem("Ти — Telegram-бот, який вітає користувача і коротко пояснює, що потрібно надіслати фото документів. Згадай, що для цього потрібно скористатися кнопками. Пиши українською, коротко і дружньо."),
+
+                ChatMessage.FromUser("Згенеруй коротке привітання для Telegram-бота автострахування. Приклад:\r\n\r\n" +
+                "👋 Привіт! Я — бот для оформлення автострахування. 📷 Надішліть фото паспорта та техпаспорта за допомогою кнопок нижче 🚗" )
+            },
+            Model = OpenAI.ObjectModels.Models.Gpt_3_5_Turbo
+        });
+
+        if (response.Successful)
+        {
+            var responseMessage = response.Choices.FirstOrDefault()?.Message?.Content;
+            if (responseMessage != null)
+            {
+                return OperationResultGeneric<string>.Success(responseMessage);
+            }
+        }
+
+        return OperationResultGeneric<string>.Failure($"Вибач, щось пішло не так з OpenAI 😞\nError: {response.Error}");
+    }
+
+    public async Task<OperationResultGeneric<string>> GenerateInsuranceAsync(UserSession userSession)
     {
 
         var response = await _openAi.ChatCompletion.CreateCompletion(new ChatCompletionCreateRequest
@@ -77,10 +103,10 @@ public class OpenAiBetalgoiService : IOpenAiService
 
             if (responseMessage != null)
             {
-                return OperationResult<string>.Sucssecc(responseMessage);
+                return OperationResultGeneric<string>.Success(responseMessage);
             }
         }
 
-        return OperationResult<string>.Failure($"Вибач, щось пішло не так з OpenAI 😞\nError: {response.Error}");
+        return OperationResultGeneric<string>.Failure($"Вибач, щось пішло не так з OpenAI 😞\nError: {response.Error}");
     }
 }

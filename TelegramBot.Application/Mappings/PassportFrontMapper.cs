@@ -1,72 +1,72 @@
 ﻿using Mindee.Parsing.Generated;
+using TelegramBot.Domain.Models;
 using TelegramBotConsole;
 using TelegramBotConsole.Models;
 
-namespace TelegramBot.Application.Mappings
+namespace TelegramBot.Application.Mappings;
+
+public static class PassportFrontMapper
 {
-    public class PassportFrontMapper : IMapper<PassportFrontModel>
+    public static OperationResultGeneric<IDocumentData> Map(Dictionary<string, GeneratedFeature> dataFromFile)
     {
-        public OperationResult<PassportFrontModel> Map(Dictionary<string, GeneratedFeature> dataFromFile)
+        var passportFrontModel = new PassportFrontModel();
+
+        foreach (var item in dataFromFile)
         {
-            var passportFrontModel = new PassportFrontModel();
+            var obj = item.Value.FirstOrDefault();
+            var key = item.Key;
 
-            foreach (var item in dataFromFile)
+            if (obj == null) return OperationResultGeneric<IDocumentData>.Failure($"Помилка зчитування данних {key}");
+
+            switch (key)
             {
-                var obj = item.Value.FirstOrDefault();
-                var key = item.Key;
+                case "full_name":
 
-                if (obj == null) return OperationResult<PassportFrontModel>.Failure($"Помилка зчитування данних {key}");
+                    passportFrontModel.FullName = new FullNames(
+                        obj.TryGetString("nameua"),
+                        obj.TryGetString("nameuk"));
 
-                switch (key)
-                {
-                    case "full_name":
+                    break;
+                case "day_of_birth":
 
-                        passportFrontModel.FullName = new FullNames(
-                            obj.TryGetString("nameua"),
-                            obj.TryGetString("nameuk"));
+                    if (obj["value"].TryGetDateTime(out DateTime birthday))
+                    {
+                        passportFrontModel.DayOfBirth = birthday;
+                    }
+                    else
+                    {
+                        return OperationResultGeneric<IDocumentData>.Failure($"Помилка зчитування данних {key}");
+                    }
+                    break;
+                case "date_of_expiry":
 
-                        break;
-                    case "day_of_birth":
+                    if (obj["value"].TryGetDateTime(out DateTime dateExpiry))
+                    {
+                        passportFrontModel.DateOfExpiry = dateExpiry;
+                    }
+                    else
+                    {
+                        return OperationResultGeneric<IDocumentData>.Failure($"Помилка зчитування данних {key}");
+                    }
+                    break;
+                case "record_no":
 
-                        if (obj["value"].TryGetDateTime(out DateTime birthday))
-                        {
-                            passportFrontModel.DayOfBirth = birthday;
-                        }
-                        else
-                        {
-                            return OperationResult<PassportFrontModel>.Failure($"Помилка зчитування данних {key}");
-                        }
-                        break;
-                    case "date_of_expiry":
+                    passportFrontModel.RecordNo = obj.TryGetString("value");
 
-                        if (obj["value"].TryGetDateTime(out DateTime dateExpiry))
-                        {
-                            passportFrontModel.DateOfExpiry = dateExpiry;
-                        }
-                        else
-                        {
-                            return OperationResult<PassportFrontModel>.Failure($"Помилка зчитування данних {key}");
-                        }
-                        break;
-                    case "record_no":
+                    break;
 
-                        passportFrontModel.RecordNo = obj.TryGetString("value");
+                case "document_no":
 
-                        break;
+                    passportFrontModel.DocumentNo = obj.TryGetString("value");
 
-                    case "document_no":
-
-                        passportFrontModel.DocumentNo = obj.TryGetString("value");
-
-                        break;
-                }
+                    break;
             }
-            if (!passportFrontModel.IsValid)
-            {
-                return OperationResult<PassportFrontModel>.Failure("Model wasn`t created successfuly");
-            }
-
-            return OperationResult<PassportFrontModel>.Sucssecc(passportFrontModel);
         }
+        if (!passportFrontModel.IsValid)
+        {
+            return OperationResultGeneric<IDocumentData>.Failure("Model wasn`t created successfuly");
+        }
+
+        return OperationResultGeneric<IDocumentData>.Success(passportFrontModel);
     }
 }

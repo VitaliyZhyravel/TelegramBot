@@ -16,7 +16,7 @@ public class MindeeService : IMindeeService
         _client = client;
     }
 
-    public async Task<OperationResult<Dictionary<string, GeneratedFeature>>> RecognizePassportAsync(string filePath,
+    public async Task<OperationResultGeneric<Dictionary<string, GeneratedFeature>>> RecognizePassportAsync(string filePath,
         string endpointName, string accountName)
     {
         try
@@ -30,13 +30,13 @@ public class MindeeService : IMindeeService
 
             if (generatedFeatures == null || generatedFeatures.Count == 0)
             {
-                return OperationResult<Dictionary<string, GeneratedFeature>>.Failure("No features found in the document.");
+                return OperationResultGeneric<Dictionary<string, GeneratedFeature>>.Failure("No features found in the document.");
             }
-            return OperationResult<Dictionary<string, GeneratedFeature>>.Sucssecc(generatedFeatures);
+            return OperationResultGeneric<Dictionary<string, GeneratedFeature>>.Success(generatedFeatures);
         }
         catch (Exception ex)
         {
-            return OperationResult<Dictionary<string, GeneratedFeature>>.Failure($"Error processing document: {ex.Message}");
+            return OperationResultGeneric<Dictionary<string, GeneratedFeature>>.Failure($"Error processing document: {ex.Message}");
         }
     }
 }

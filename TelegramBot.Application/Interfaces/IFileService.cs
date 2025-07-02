@@ -6,5 +6,6 @@ namespace TelegramBot.Application.Interfaces;
 
 public interface IFileService
 {
-    Task<OperationResult<string?>> DownloadTgFile(Message message, TelegramBotClient bot, string path);
+    Task<OperationResultGeneric<string?>> DownloadTgFileAsync(Message message, ITelegramBotClient bot, string path);
+    void DeleteFile(string filePath);
 }

@@ -1,12 +1,13 @@
 ﻿using Mindee.Parsing.Generated;
+using TelegramBot.Domain.Models;
 using TelegramBotConsole;
 using TelegramBotConsole.Models;
 
 namespace TelegramBot.Application.Mappings;
 
-internal class PassportBackMapper : IMapper<PassportBackModel>
+public class PassportBackMapper 
 {
-    public OperationResult<PassportBackModel> Map(Dictionary<string, GeneratedFeature> dataFromFile)
+    public OperationResultGeneric<IDocumentData> Map(Dictionary<string, GeneratedFeature> dataFromFile)
     {
         var passportBackModel = new PassportBackModel();
 
@@ -15,7 +16,7 @@ internal class PassportBackMapper : IMapper<PassportBackModel>
             var obj = item.Value.FirstOrDefault();
             var key = item.Key;
 
-            if (obj == null) return OperationResult<PassportBackModel>.Failure($"Помилка зчитування данних {key}");
+            if (obj == null) return OperationResultGeneric<IDocumentData>.Failure($"Помилка зчитування данних {key}");
 
             switch (key)
             {
@@ -32,7 +33,7 @@ internal class PassportBackMapper : IMapper<PassportBackModel>
                     }
                     else
                     {
-                        return OperationResult<PassportBackModel>.Failure($"Помилка зчитування данних {key}");
+                        return OperationResultGeneric<IDocumentData>.Failure($"Помилка зчитування данних {key}");
                     }
                     break;
                 case "identification_code":
@@ -45,9 +46,9 @@ internal class PassportBackMapper : IMapper<PassportBackModel>
         }
         if (!passportBackModel.IsValid)
         {
-            return OperationResult<PassportBackModel>.Failure("Model wasn`t created successfuly");
+            return OperationResultGeneric<IDocumentData>.Failure("Model wasn`t created successfuly");
         }
 
-        return OperationResult<PassportBackModel>.Sucssecc(passportBackModel);
+        return OperationResultGeneric<IDocumentData>.Success(passportBackModel);
     }
 }

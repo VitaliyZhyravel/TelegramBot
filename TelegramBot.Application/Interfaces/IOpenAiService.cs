@@ -5,5 +5,6 @@ namespace TelegramBot.Infrastructure.Interfaces;
 
 public interface IOpenAiService
 {
-    Task<OperationResult<string>> GenerateInsurance(UserSession userSession);
+    Task<OperationResultGeneric<string>> GenerateInsuranceAsync(UserSession userSession);
+    Task<OperationResultGeneric<string>> GenerateGreetingsAsync();
 }

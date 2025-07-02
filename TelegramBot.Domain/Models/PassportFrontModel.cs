@@ -1,6 +1,8 @@
-﻿namespace TelegramBotConsole.Models;
+﻿using TelegramBot.Domain.Models;
 
-public partial class PassportFrontModel
+namespace TelegramBotConsole.Models;
+
+public class PassportFrontModel : IDocumentData
 {
     public FullNames? FullName { get; set; }
     public DateTime DayOfBirth { get; set; }
@@ -8,6 +10,7 @@ public partial class PassportFrontModel
     public string? RecordNo { get; set; }
     public string? DocumentNo { get; set; }
 
+    public bool IsConfirmed { get; set; }
     public bool IsValid => !string.IsNullOrEmpty(FullName?.NameUa) && !string.IsNullOrEmpty(FullName?.NameUK)
          && DayOfBirth != default && DateOfExpiry != default && !string.IsNullOrEmpty(RecordNo) && !string.IsNullOrEmpty(DocumentNo);
 }

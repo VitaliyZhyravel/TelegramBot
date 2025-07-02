@@ -5,5 +5,5 @@ namespace TelegramBot.Application.Mappings;
 
 internal interface IMapper<TOut>
 {
-    OperationResult<TOut> Map(Dictionary<string, GeneratedFeature> dataFromFile);
+    OperationResultGeneric<TOut> Map(Dictionary<string, GeneratedFeature> dataFromFile);
 }

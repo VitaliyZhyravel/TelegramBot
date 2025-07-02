@@ -1,13 +1,14 @@
 ﻿
 using Mindee.Parsing.Generated;
+using TelegramBot.Domain.Models;
 using TelegramBotConsole;
 using TelegramBotConsole.Models;
 
 namespace TelegramBot.Application.Mappings
 {
-    internal class CarRegistrationMapper : IMapper<CarRegistrationModel>
+    public static class CarRegistrationMapper 
     {
-        public OperationResult<CarRegistrationModel> Map(Dictionary<string, GeneratedFeature> dataFromFile)
+        public static OperationResultGeneric<IDocumentData> Map(Dictionary<string, GeneratedFeature> dataFromFile)
         {
             var vehicleRegistrationModel = new CarRegistrationModel();
 
@@ -58,7 +59,7 @@ namespace TelegramBot.Application.Mappings
                 throw new Exception($"{nameof(CarRegistrationModel)} wasn`t created successfuly");
             }
 
-            return OperationResult<CarRegistrationModel>.Sucssecc( vehicleRegistrationModel);
+            return OperationResultGeneric<IDocumentData>.Success( vehicleRegistrationModel);
         }
     }
 }

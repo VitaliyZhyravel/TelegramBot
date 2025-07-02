@@ -12,11 +12,6 @@ EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "TelegramBot.Infrastructure", "..\TelegramBot.Infrastructure\TelegramBot.Infrastructure.csproj", "{84737B5F-0AA9-40EB-A72B-76A3E67EE969}"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution Items", "{8EC462FD-D22E-90A8-E5CE-7E832BA40C5D}"
-	ProjectSection(SolutionItems) = preProject
-		.gitignore = .gitignore
-	EndProjectSection
-EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "TelegramBot.Telegram", "..\TelegramBot.Telegram\TelegramBot.Telegram.csproj", "{B46A1D9C-E497-4FC2-A8F8-B474F213B5C2}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "TelegramBot.SharedKernel", "..\TelegramBot.SharedKernel\TelegramBot.SharedKernel.csproj", "{37EEA0B3-65DD-4F70-A37B-7AA3F4D075BD}"
 EndProject
@@ -42,10 +37,6 @@ Global
 		{84737B5F-0AA9-40EB-A72B-76A3E67EE969}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{84737B5F-0AA9-40EB-A72B-76A3E67EE969}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{84737B5F-0AA9-40EB-A72B-76A3E67EE969}.Release|Any CPU.Build.0 = Release|Any CPU
-		{B46A1D9C-E497-4FC2-A8F8-B474F213B5C2}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{B46A1D9C-E497-4FC2-A8F8-B474F213B5C2}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{B46A1D9C-E497-4FC2-A8F8-B474F213B5C2}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{B46A1D9C-E497-4FC2-A8F8-B474F213B5C2}.Release|Any CPU.Build.0 = Release|Any CPU
 		{37EEA0B3-65DD-4F70-A37B-7AA3F4D075BD}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
 		{37EEA0B3-65DD-4F70-A37B-7AA3F4D075BD}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{37EEA0B3-65DD-4F70-A37B-7AA3F4D075BD}.Release|Any CPU.ActiveCfg = Release|Any CPU
