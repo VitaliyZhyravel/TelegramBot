@@ -13,7 +13,7 @@ namespace TelegramBot.Application.Telegram.Handlers
             _botClient = botClient;
         }
 
-        public async Task UnknownMessageHandler(Update update)
+        public async Task UnknownMessageHandlerAsync(Update update)
         {
             var chatId = update.Message?.Chat.Id;
 
