@@ -28,9 +28,9 @@ builder.Services.AddScoped<IMessageHandler, DocumentsSubmissionHandler>();
 builder.Services.AddScoped<IMessageHandler, GreetingsHandler>();
 builder.Services.AddScoped<IUnknownHandler, UnknownHandler>();
 
-builder.Services.AddSingleton<MindeeClient>(new MindeeClient(builder.Configuration["ApiKeys:MindeeService"]));
-builder.Services.AddSingleton<OpenAIService>(new OpenAIService(new OpenAiOptions { ApiKey = builder.Configuration["ApiKeys:OpenAiService"]! }));
-builder.Services.AddSingleton<ITelegramBotClient>(new TelegramBotClient(builder.Configuration["ApiKeys:TelegramBotService"]!));
+builder.Services.AddSingleton<MindeeClient>(new MindeeClient(builder.Configuration["ApiKeys.MindeeService"]));
+builder.Services.AddSingleton<OpenAIService>(new OpenAIService(new OpenAiOptions { ApiKey = builder.Configuration["ApiKeys.OpenAiService"]! }));
+builder.Services.AddSingleton<ITelegramBotClient>(new TelegramBotClient(builder.Configuration["ApiKeys.TelegramBotService"]!));
 
 var app = builder.Build();
 
