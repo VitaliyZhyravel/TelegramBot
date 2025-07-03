@@ -1,20 +1,21 @@
-﻿using Microsoft.Extensions.Logging;
-using Telegram.Bot.Types;
+﻿using Telegram.Bot.Types;
 using Telegram.Bot.Types.Enums;
 using TelegramBot.Application.Interfaces.Handlers;
 
 namespace TelegramBot.Application.Telegram.Handlers;
 
-public class TelegramUpdateHandler : Interfaces.Handlers.IUpdateHandler
+public class TelegramUpdateHandler : IUpdateHandler
 {
     private readonly IEnumerable<IMessageHandler> messageHandlers;
     private readonly IEnumerable<ICallbackHandler> callbackHandlers;
+    private readonly IUnknownHandler unknownHandler;
 
     public TelegramUpdateHandler(IEnumerable<IMessageHandler> messageHandlers, IEnumerable<ICallbackHandler> callbackHandlers,
-        ILogger<TelegramUpdateHandler> logger)
+        IUnknownHandler unknownHandler)
     {
         this.messageHandlers = messageHandlers;
         this.callbackHandlers = callbackHandlers;
+        this.unknownHandler = unknownHandler;
     }
 
     public async Task HandleUpdateAsync( Update update, CancellationToken cancellationToken)
@@ -22,14 +23,19 @@ public class TelegramUpdateHandler : Interfaces.Handlers.IUpdateHandler
         if (update.Type == UpdateType.Message && update.Message != null)
         {
             var message = update.Message;
+            var isHandled = false;
 
             foreach (var handler in messageHandlers)
             {
                 if (handler.CanHandle(message))
                 {
                     await handler.HandleMessageAsync(message, cancellationToken);
+                    isHandled = true;
+                    break; 
                 }
             }
+            if (!isHandled)
+                await unknownHandler.UnknownMessageHandlerAsync(update);
         }
         else if (update.Type == UpdateType.CallbackQuery && update.CallbackQuery != null)
         {
@@ -42,10 +48,6 @@ public class TelegramUpdateHandler : Interfaces.Handlers.IUpdateHandler
                     await handler.HandleMessageAsync(callbackQuery, cancellationToken);
                 }
             }
-        }
-        else
-        {
-
         }
     }
 }

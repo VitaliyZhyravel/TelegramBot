@@ -26,6 +26,7 @@ builder.Services.AddScoped<ICallbackHandler, ConfirmInsurancePriceHandler>();
 builder.Services.AddScoped<IMessageHandler, DocumentSelectionHandler>();
 builder.Services.AddScoped<IMessageHandler, DocumentsSubmissionHandler>();
 builder.Services.AddScoped<IMessageHandler, GreetingsHandler>();
+builder.Services.AddScoped<IUnknownHandler, UnknownHandler>();
 
 builder.Services.AddSingleton<MindeeClient>(new MindeeClient(builder.Configuration["ApiKeys:MindeeService"]));
 builder.Services.AddSingleton<OpenAIService>(new OpenAIService(new OpenAiOptions { ApiKey = builder.Configuration["ApiKeys:OpenAiService"]! }));
