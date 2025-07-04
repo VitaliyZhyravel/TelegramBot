@@ -36,5 +36,6 @@ secrets.json
 *.bak
 *.orig
 
-wwwroot/
-/TelegramBot.Api/.gitignore
+wwwroot/**/*       
+!wwwroot/**/.gitkeep 
+
