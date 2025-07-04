@@ -1,11 +1,6 @@
 FROM mcr.microsoft.com/dotnet/aspnet:9.0 AS base
 WORKDIR /app
-
-RUN mkdir -p /app/https
-COPY TelegramBot.Api/Certificates/aspnetapp.pfx /app/https/aspnetapp.pfx
-
-EXPOSE 8080
-EXPOSE 8081
+EXPOSE 10000
 
 FROM mcr.microsoft.com/dotnet/sdk:9.0 AS build
 ARG BUILD_CONFIGURATION=Release
@@ -29,9 +24,5 @@ RUN dotnet publish "TelegramBot.Api/TelegramBot.Api.csproj" -c $BUILD_CONFIGURAT
 FROM base AS final
 WORKDIR /app
 COPY --from=publish /app/publish .
-
-ENV ASPNETCORE_ENVIRONMENT=Development \
-    ASPNETCORE_URLS=https://+:8081 \
-    ASPNETCORE_Kestrel__Certificates__Default__Path=/app/https/aspnetapp.pfx
 
 ENTRYPOINT ["dotnet", "TelegramBot.Api.dll"]
