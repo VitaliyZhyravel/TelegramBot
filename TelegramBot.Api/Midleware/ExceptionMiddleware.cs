@@ -1,14 +1,14 @@
 ﻿namespace TelegramBot.Api.Midleware;
 
-public class ExceptionMidleware
+public class ExceptionMiddleware
 {
     private readonly RequestDelegate _next;
-    private readonly Logger<ExceptionMidleware> _logger;
+    private readonly ILogger _logger;
 
-    public ExceptionMidleware(RequestDelegate next, Logger<ExceptionMidleware> logger)
+    public ExceptionMiddleware(RequestDelegate next, ILoggerFactory loggerFactory)
     {
         _next = next;
-        _logger = logger;
+        _logger = loggerFactory.CreateLogger<ExceptionMiddleware>();
     }
 
     public async Task Invoke(HttpContext context)
@@ -19,8 +19,7 @@ public class ExceptionMidleware
         }
         catch (Exception ex)
         {
-            _logger.LogError(ex, "Unhandled exception occurred: {Message}", ex.Message);
-
+            _logger.LogError(ex, "Unhandled exception occurred");
             context.Response.StatusCode = 500;
             await context.Response.WriteAsync("Internal Server Error");
         }
@@ -31,6 +30,6 @@ public static class ExceptionMidlewareExtensions
 {
     public static IApplicationBuilder UseExceptionMidleware(this IApplicationBuilder builder)
     {
-        return builder.UseMiddleware<ExceptionMidleware>();
+        return builder.UseMiddleware<ExceptionMiddleware>();
     }
 }
