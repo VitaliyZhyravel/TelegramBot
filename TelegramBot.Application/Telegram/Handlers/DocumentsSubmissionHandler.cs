@@ -1,4 +1,5 @@
 ﻿using Microsoft.Extensions.Configuration;
+using Microsoft.Extensions.Logging;
 using Mindee.Parsing.Generated;
 using Telegram.Bot;
 using Telegram.Bot.Types;
@@ -21,13 +22,16 @@ public class DocumentsSubmissionHandler : IMessageHandler
     private readonly ITelegramBotClient _botClient;
     private readonly IConfiguration _configuration;
     private readonly IMindeeService _mindeeService;
+    private readonly ILogger<DocumentsSubmissionHandler> logger;
 
-    public DocumentsSubmissionHandler(Interfaces.IFileService fileService, ITelegramBotClient botClient, IConfiguration configuration, IMindeeService mindeeService)
+    public DocumentsSubmissionHandler(Interfaces.IFileService fileService, ITelegramBotClient botClient, 
+        IConfiguration configuration, IMindeeService mindeeService,ILogger<DocumentsSubmissionHandler> logger)
     {
         _fileService = fileService;
         _botClient = botClient;
         _configuration = configuration;
         _mindeeService = mindeeService;
+        this.logger = logger;
     }
 
     public bool CanHandle(Message message) =>
@@ -60,9 +64,10 @@ public class DocumentsSubmissionHandler : IMessageHandler
                                  $"Номер документа: {((PassportFrontModel)data).DocumentNo}",
                          cancellationToken);
                 }
-                catch (Exception)
+                catch (Exception ex)
                 {
-                    throw;
+                    logger.LogError($"Error in DocumentsSubmissionHandler: {ex.Message}\n{ex.StackTrace}");
+                    await _botClient.SendMessage(message.Chat.Id, "⚠️ Сталася помилка при обробці документа. Спробуйте ще раз.");
                 }
 
                 break;
@@ -83,9 +88,10 @@ public class DocumentsSubmissionHandler : IMessageHandler
                                 $"Authority : {((PassportBackModel)data).Authority}",
                         cancellationToken);
                 }
-                catch (Exception)
+                catch (Exception ex)
                 {
-                    throw;
+                    logger.LogError($"Error in DocumentsSubmissionHandler: {ex.Message}\n{ex.StackTrace}");
+                    await _botClient.SendMessage(message.Chat.Id, "⚠️ Сталася помилка при обробці документа. Спробуйте ще раз.");
                 }
 
                 break;
@@ -109,9 +115,10 @@ public class DocumentsSubmissionHandler : IMessageHandler
                             $"Рік випуску: {((CarRegistrationModel)data).YearOfManufacture}",
                         cancellationToken);
                 }
-                catch (Exception)
+                catch (Exception ex)
                 {
-                    throw;
+                    logger.LogError($"Error in DocumentsSubmissionHandler: {ex.Message}\n{ex.StackTrace}");
+                    await _botClient.SendMessage(message.Chat.Id, "⚠️ Сталася помилка при обробці документа. Спробуйте ще раз.");
                 }
                 break;
         }
@@ -134,6 +141,7 @@ public class DocumentsSubmissionHandler : IMessageHandler
         if (!downloadingResult.IsSuccess || downloadingResult.Data == null)
         {
             await _botClient.SendMessage(chatId, "Не вдалося отримати фото. Спробуйте ще раз.", cancellationToken: cancellationToken);
+            logger.LogError($"Failed to download file");
             return;
         }
         var recognizeResult = await _mindeeService.RecognizePassportAsync(downloadingResult.Data, endpoint, accountName);
@@ -142,6 +150,7 @@ public class DocumentsSubmissionHandler : IMessageHandler
         {
             await _botClient.SendMessage(chatId, "Не вдалося обробити фото паспорта. Спробуйте ще раз.", cancellationToken: cancellationToken);
             _fileService.DeleteFile(downloadingResult.Data);
+            logger.LogError($"Failed to recognize passport: {recognizeResult.ErrorMesage}");
             return;
         }
 
@@ -152,6 +161,7 @@ public class DocumentsSubmissionHandler : IMessageHandler
         if (!mapperResult.IsSuccess || mapperResult.Data == null)
         {
             await _botClient.SendMessage(chatId, "Не вдалося обробити дані паспорта. Спробуйте ще раз.", cancellationToken: cancellationToken);
+            logger.LogError($"Failed to map data: {mapperResult.ErrorMesage}");
             return;
         }
 
