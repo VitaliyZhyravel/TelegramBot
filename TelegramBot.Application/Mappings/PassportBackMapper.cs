@@ -5,9 +5,9 @@ using TelegramBotConsole.Models;
 
 namespace TelegramBot.Application.Mappings;
 
-public class PassportBackMapper 
+public static class PassportBackMapper 
 {
-    public OperationResultGeneric<IDocumentData> Map(Dictionary<string, GeneratedFeature> dataFromFile)
+    public static OperationResultGeneric<IDocumentData> Map(Dictionary<string, GeneratedFeature> dataFromFile)
     {
         var passportBackModel = new PassportBackModel();
 
