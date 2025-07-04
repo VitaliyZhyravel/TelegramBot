@@ -81,7 +81,7 @@ public class DocumentsSubmissionHandler : IMessageHandler
                         _configuration["MindeeEndpoints:CustomPassportBack:endpoint"]!,
                         _configuration["MindeeEndpoints:AccountName"]!,
                         _configuration["DownloadingPaths:PassportBack"]!,
-                        CarRegistrationMapper.Map,
+                        PassportBackMapper.Map,
                         data => userSession.PassportBack = (PassportBackModel)data,
                         data => $"Identefication: {((PassportBackModel)data).IdentificationCode} \n" +
                                 $"Date of Issue: {((PassportBackModel)data).DateOfIssue.ToShortDateString()}\n" +
