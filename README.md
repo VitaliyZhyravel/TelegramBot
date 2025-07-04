@@ -1,10 +1,10 @@
-PolisUA – Telegram-бот автострахування
+PolisUA – Telegram Insurance Bot
 
-PolisUA — це Telegram-бот, який дозволяє користувачам оформити автостраховку в декілька простих кроків. Користувач надсилає фото паспорта та техпаспорта, бот зчитує дані за допомогою сервісу Mindee, підтверджує їх із користувачем, повідомляє фіксовану вартість страхування ($100), після чого генерує фейковий страховий поліс у форматі PDF і надсилає його в чат. Відповіді бота формуються за допомогою OpenAI, щоб забезпечити природну взаємодію з користувачем.
+PolisUA is a Telegram bot that allows users to obtain car insurance in just a few simple steps. The user sends photos of their passport and vehicle registration certificate. The bot reads the data using the Mindee service, confirms it with the user, informs them of a fixed insurance cost ($100), then generates a fake insurance policy in PDF format and sends it directly to the chat. The bot's responses are generated using OpenAI to ensure natural communication.
 
-⚙️ Встановлення та запуск
+⚙️ Installation and Launch
 
-✅ Необхідні умови
+✅ Requirements
 
 .NET 9 SDK
 
@@ -14,35 +14,36 @@ Mindee API Key
 
 OpenAI API Key
 
-📁 Змінні середовища
+📁 Environment Variables
 
-Задайте наступні змінні (наприклад, у .env файлі або appsettings.Production.json):
+Set the following variables (e.g., in a .env file or appsettings.Production.json):
 
 ApiKeys.TelegramBotService=your-telegram-token-here  
 ApiKeys.MindeeService=your-mindee-api-key  
 ApiKeys.OpenAiService=your-openai-api-key  
 
-🚀 Запуск
+🚀 Launch
 
-Через .NET CLI:
+Using .NET CLI:
 
 dotnet run --project TelegramBot.Api
 
-Або через Docker:
+Or using Docker:
 
 docker build -t telegram-insurance-bot .
 docker run -p 8080:10000 --env-file .env telegram-insurance-bot
 
-Щоб використовувати бота в Telegram, потрібно задеплоїти його на публічний сервер з підтримкою HTTPS (наприклад, Render, Railway або власний VPS), оскільки Telegram надсилає оновлення через webhook.
+To use this bot in Telegram, it must be deployed to a public server with HTTPS support (e.g., Render, Railway, or your own VPS), as Telegram sends updates via webhook.
 
-🔄 Логіка роботи
+🔄 Bot Workflow
 
-Користувач надсилає команду /start. Бот вітається та пропонує скористатися кнопками для надання документів. Після надсилання кожного документа бот зчитує дані та просить користувача підтвердити їх. Коли всі документи надані та підтверджені, користувач може натиснути кнопку «Згенерувати автостраховку». Бот попередить, що генерація коштуватиме $100, і після підтвердження створить PDF-файл страхового полісу та надішле його в чат.
+The user sends the /start command. The bot greets the user and suggests using buttons to upload the required documents. After each document is uploaded, the bot reads the data and asks the user to confirm it. Once all documents are provided and confirmed, the user can press the "Generate Insurance" button. The bot warns that generation will cost $100, and after confirmation—if all data is complete and verified—it generates a PDF insurance file and sends it to the user.
 
-🔗 Посилання в Телеграм
+🔗 Link
 
 Telegram Bot: @TaskForInterviewDICEUS_bot
 
-👤 Автор
+👤 Author
 
-Віталій Журавель
+Vitalii Zhuravel
+
