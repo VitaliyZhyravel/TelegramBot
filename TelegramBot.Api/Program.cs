@@ -34,10 +34,7 @@ builder.Services.AddSingleton<ITelegramBotClient>(new TelegramBotClient(builder.
 
 var app = builder.Build();
 
-if (builder.Environment.IsProduction())
-{
-    app.UseExceptionMidleware();
-}
+app.UseExceptionMidleware();
 
 app.UseHttpsRedirection();
 
