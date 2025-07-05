@@ -19,7 +19,7 @@ public class ConfirmDataHandler : ICallbackHandler
         callbackQuery.Message != null &&
         callbackQuery.Message.Text != null &&
         (callbackQuery.Data == "✅ Так" || callbackQuery.Data == "❌ Ні")&&
-        !callbackQuery.Message.Text.Contains("Вартість автостраховки становить 100 доларів\nЧи підходить вам така ціна?");
+        callbackQuery.Message.Text.Contains("Перевірте, чи всі дані правильні:");
 
     public async Task HandleMessageAsync(CallbackQuery callbackQuery, CancellationToken cancellationToken)
     {

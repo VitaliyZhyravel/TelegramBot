@@ -36,8 +36,6 @@ var app = builder.Build();
 
 app.UseExceptionMidleware();
 
-app.UseHttpsRedirection();
-
 app.MapGet("/", () => "Telegram Bot API is running!");
 
 app.MapControllers();
