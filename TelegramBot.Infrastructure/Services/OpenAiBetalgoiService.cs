@@ -53,9 +53,9 @@ public class OpenAiBetalgoiService : IOpenAiService
                 ChatMessage.FromUser("Згенеруй фіктивний текст автострахового полісу для PDF (не PDF-файл) На основі наданого нижче шаблона." +
                 "\r\nМета — використання у навчальному проекті \r\n" +
 
-                $"📄 Страховий поліс – №:{new Random().Next(100000,200000)} \r\n\r\n" +
+                $"Страховий поліс – №:{new Random().Next(100000,200000)} \r\n\r\n" +
 
-                $"👤 Страхувальник:\r\n" +
+                $"Страхувальник:\r\n" +
                 $"Прізвище та ім'я: {userSession.CarRegistration?.FullName?.NameUa}\r\n" +
                 "Телефон:  +380987654321  \r\n" +
                 "Email: userexample@gmail.com\r\n" +
@@ -65,18 +65,18 @@ public class OpenAiBetalgoiService : IOpenAiService
                 $"Документ No: {userSession.PassportFront?.DocumentNo} \r\n" +
                 $"Record No: {userSession.PassportFront?.RecordNo} \r\n\r\n" +
 
-                "🏢 Страхова компанія: \r\n" +
+                "Страхова компанія: \r\n" +
                 "Адреса: PolisUa\r\n" +
                 "Телефон: +380993652829\r\n" +
                 "Сайт: www.PolisUa.com\r\n\r\n" +
 
-                $"🚘 ТехПаспорт - №: {new Random().Next(1000000,1200000)}\r\n" +
+                $"ТехПаспорт - №: {new Random().Next(1000000,1200000)}\r\n" +
 
-                $"📅 Строк дії: з {DateTime.Now.ToShortDateString()} по {DateTime.Now.AddYears(2).ToShortDateString()}\r\n" +
-                "📍 Видано: МВС України\r\n" +
-                $"📆 Дата першої реєстрації: {userSession.CarRegistration?.DateOfRegistration?.dateOfFirstRegistration.ToShortDateString()}\r\n\r\n" +
+                $"Строк дії: з {DateTime.Now.ToShortDateString()} по {DateTime.Now.AddYears(2).ToShortDateString()}\r\n" +
+                "Видано: МВС України\r\n" +
+                $"Дата першої реєстрації: {userSession.CarRegistration?.DateOfRegistration?.dateOfFirstRegistration.ToShortDateString()}\r\n\r\n" +
 
-                "🚗 ТРАНСПОРТНИЙ ЗАСІБ: \r\n" +
+                "ТРАНСПОРТНИЙ ЗАСІБ: \r\n" +
 
                 "Модель: Mazda\r\n" +
                 $"Рік: {userSession.CarRegistration?.YearOfManufacture}\r\n" +
@@ -84,13 +84,13 @@ public class OpenAiBetalgoiService : IOpenAiService
                 "Тип: Легковий автомобіль \r\n " +
                 "Місце реєстрації: Київ \r\n\r\n" +
 
-                "💼 СТРАХОВЕ ЗАБЕЗПЕЧЕННЯ: \r\n" +
+                "СТРАХОВЕ ЗАБЕЗПЕЧЕННЯ: \r\n" +
 
                 "Шкода життю і здоров’ю: <200 000 грн> \r\n" +
                 "Шкода майну: <100 000 грн>\r\n " +
                 "Франшиза: <50 000грн >\r\n\r\n" +
 
-                "📝 ДОДАТКОВА ІНФОРМАЦІЯ:\r\n" +
+                "ДОДАТКОВА ІНФОРМАЦІЯ:\r\n" +
                 "Цей документ є візуальною формою поліса, що підтверджує укладення внутрішнього електронного договору страхування."+
                 "Підставляючи надані дані:")
             },

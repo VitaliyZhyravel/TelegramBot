@@ -61,9 +61,9 @@ public class DocumentSelectionHandler : IMessageHandler
                 if (userSession.PassportFront == null) errors.Add("Передню частину паспорта не надано");
                 if (userSession.PassportBack == null) errors.Add("Задню частину паспорта не надано");
 
-                if (userSession.CarRegistration != null && userSession.CarRegistration.IsConfirmed == false) errors.Add("Техпаспорт не підтверджено");
-                if (userSession.PassportFront != null && userSession.PassportFront.IsConfirmed == false) errors.Add("Передню частину паспорта не підтверджено");
-                if (userSession.PassportBack != null && userSession.PassportBack.IsConfirmed == false) errors.Add("Задню частину паспорта не підтверджено");
+                if (userSession.CarRegistration != null && userSession.CarRegistration.IsConfirmed == false) errors.Add("Данні з техпаспорта не підтверджено");
+                if (userSession.PassportFront != null && userSession.PassportFront.IsConfirmed == false) errors.Add("Данні з передньої частини паспорта не підтверджено");
+                if (userSession.PassportBack != null && userSession.PassportBack.IsConfirmed == false) errors.Add("Данні з задньої частини паспорта не підтверджено");
 
                 if (errors.Count > 0)
                 {

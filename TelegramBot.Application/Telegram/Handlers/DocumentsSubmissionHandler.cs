@@ -168,7 +168,6 @@ public class DocumentsSubmissionHandler : IMessageHandler
         setUserData.Invoke(mapperResult.Data);
 
         var preview = generateText.Invoke(mapperResult.Data);
-        await _botClient.SendMessage(chatId, "Перевірте, чи всі дані правильні:", cancellationToken: cancellationToken);
-        await _botClient.SendMessage(chatId, preview, replyMarkup: new InlineKeyboardButton[] { "✅ Так", "❌ Ні" }, cancellationToken: cancellationToken);
+        await _botClient.SendMessage(chatId, $"Перевірте, чи всі дані правильні:\n\n\r{preview}", replyMarkup: new InlineKeyboardButton[] { "✅ Так", "❌ Ні" }, cancellationToken: cancellationToken);
     }
 }
