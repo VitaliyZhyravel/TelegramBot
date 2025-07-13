@@ -27,8 +27,7 @@ public class ConfirmInsurancePriceHandler : ICallbackHandler
     }
 
     public bool CanHandle(CallbackQuery callbackQuery) => callbackQuery.Message != null && callbackQuery.Message.Text != null &&
-        (callbackQuery.Data == "✅ Так" || callbackQuery.Data == "❌ Ні") && SessionStorage.GetSession(callbackQuery.Message.Chat.Id).Step == BotStep.GenerateInsurance &&
-        callbackQuery.Message.Text.Contains("Вартість автостраховки становить 100 доларів\nЧи підходить вам така ціна?");
+        (callbackQuery.Data == "✅ Так" || callbackQuery.Data == "❌ Ні") && SessionStorage.GetSession(callbackQuery.Message.Chat.Id).Step == BotStep.GenerateInsurance;
 
     public async Task HandleMessageAsync(CallbackQuery callbackQuery, long chatId, CancellationToken cancellationToken)
     {
