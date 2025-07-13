@@ -24,7 +24,7 @@ public class PdfGeneratorService : IPdfGenerator
             })
             .GeneratePdf(outputPath);
         }
-        catch (Exception ex)
+        catch (Exception)
         {
 
             throw;

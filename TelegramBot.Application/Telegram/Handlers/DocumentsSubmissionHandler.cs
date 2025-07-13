@@ -1,17 +1,15 @@
 ﻿using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
-using Mindee.Parsing.Generated;
 using Telegram.Bot;
 using Telegram.Bot.Types;
 using Telegram.Bot.Types.Enums;
 using Telegram.Bot.Types.ReplyMarkups;
 using TelegramBot.Application.Interfaces.Handlers;
 using TelegramBot.Application.Mappings;
-using TelegramBot.Domain.Models;
+using TelegramBot.Domain.Domain;
 using TelegramBot.Infrastructure.Interfaces;
 using TelegramBotConsole;
 using TelegramBotConsole.Enums;
-using TelegramBotConsole.Models;
 using TelegramBotConsole.User;
 
 namespace TelegramBot.Application.Telegram.Handlers;
@@ -24,8 +22,8 @@ public class DocumentsSubmissionHandler : IMessageHandler
     private readonly IMindeeService _mindeeService;
     private readonly ILogger<DocumentsSubmissionHandler> logger;
 
-    public DocumentsSubmissionHandler(Interfaces.IFileService fileService, ITelegramBotClient botClient, 
-        IConfiguration configuration, IMindeeService mindeeService,ILogger<DocumentsSubmissionHandler> logger)
+    public DocumentsSubmissionHandler(Interfaces.IFileService fileService, ITelegramBotClient botClient,
+        IConfiguration configuration, IMindeeService mindeeService, ILogger<DocumentsSubmissionHandler> logger)
     {
         _fileService = fileService;
         _botClient = botClient;
@@ -36,56 +34,27 @@ public class DocumentsSubmissionHandler : IMessageHandler
 
     public bool CanHandle(Message message) =>
         message != null &&
-        message.Type == MessageType.Photo;
+        message.Type == MessageType.Photo && (SessionStorage.GetSession(message.Chat.Id).Step
+        == BotStep.Passport || SessionStorage.GetSession(message!.Chat.Id).Step == BotStep.TechnicalPassport);
 
-    public async Task HandleMessageAsync(Message message, CancellationToken cancellationToken)
+    public async Task HandleMessageAsync(Message message, long chatId, CancellationToken cancellationToken)
     {
-        var chatId = message.Chat.Id;
         var userSession = SessionStorage.GetSession(chatId);
 
         switch (userSession.Step)
         {
-            case BotStep.PassportFront:
+            case BotStep.Passport:
 
                 try
                 {
-                    await Handler(
-                         message,
-                         _configuration["MindeeEndpoints:CustomPassportFront:endpoint"]!,
-                         _configuration["MindeeEndpoints:AccountName"]!,
-                         _configuration["DownloadingPaths:PassportFront"]!,
-                         PassportFrontMapper.Map,
-                         data => userSession.PassportFront = (PassportFrontModel)data,
-                         data => $"Ім'я (українською): {((PassportFrontModel)data).FullName?.NameUa}\n" +
-                                 $"Ім'я (англійською): {((PassportFrontModel)data).FullName?.NameUK}\n" +
-                                 $"Дата народження: {((PassportFrontModel)data).DayOfBirth.ToShortDateString()}\n" +
-                                 $"Дійсний до: {((PassportFrontModel)data).DateOfExpiry.ToShortDateString()}\n" +
-                                 $"Номер запису: {((PassportFrontModel)data).RecordNo}\n" +
-                                 $"Номер документа: {((PassportFrontModel)data).DocumentNo}",
-                         cancellationToken);
-                }
-                catch (Exception ex)
-                {
-                    logger.LogError($"Error in DocumentsSubmissionHandler: {ex.Message}\n{ex.StackTrace}");
-                    await _botClient.SendMessage(message.Chat.Id, "⚠️ Сталася помилка при обробці документа. Спробуйте ще раз.");
-                }
-
-                break;
-
-            case BotStep.PassportBack:
-              
-                try
-                {
-                    await Handler(
+                    await ProcessDocumentAsync(chatId,
                         message,
-                        _configuration["MindeeEndpoints:CustomPassportBack:endpoint"]!,
-                        _configuration["MindeeEndpoints:AccountName"]!,
-                        _configuration["DownloadingPaths:PassportBack"]!,
-                        PassportBackMapper.Map,
-                        data => userSession.PassportBack = (PassportBackModel)data,
-                        data => $"Identefication: {((PassportBackModel)data).IdentificationCode} \n" +
-                                $"Date of Issue: {((PassportBackModel)data).DateOfIssue.ToShortDateString()}\n" +
-                                $"Authority : {((PassportBackModel)data).Authority}",
+                        _configuration["DownloadingPaths:PassportFront"]!,
+                        _mindeeService.RecognizePassportAsync,
+                        PassportMapper.Map,
+                        d => userSession.Passport = (PassportModel)d,
+                        d => ((PassportModel)d).ToString(),
+                        userSession.Step,
                         cancellationToken);
                 }
                 catch (Exception ex)
@@ -100,19 +69,14 @@ public class DocumentsSubmissionHandler : IMessageHandler
 
                 try
                 {
-                    await Handler(
+                    await ProcessDocumentAsync(chatId,
                         message,
-                        _configuration["MindeeEndpoints:RegistrationDocument:endpoint"]!,
-                        _configuration["MindeeEndpoints:AccountName"]!,
-                        _configuration["DownloadingPaths:RegistrationDocument"]!,
-                        CarRegistrationMapper.Map,
-                        data => userSession.CarRegistration = (CarRegistrationModel)data,
-                        data => $"Ім'я (українською): {((CarRegistrationModel)data).FullName?.NameUa}\n" +
-                            $"Ім'я (англійською): {((CarRegistrationModel)data).FullName?.NameUK}\n" +
-                            $"Реєстраційний номер: {((CarRegistrationModel)data).RegistrationNumber}\n" +
-                            $"Дата реєстрації: {((CarRegistrationModel)data).DateOfRegistration!.dateOfRegistration.ToShortDateString()}\n" +
-                            $"Дата першої реєстрації: {((CarRegistrationModel)data).DateOfRegistration!.dateOfFirstRegistration.ToShortDateString()}\n" +
-                            $"Рік випуску: {((CarRegistrationModel)data).YearOfManufacture}",
+                        _configuration["DownloadingPaths:TechnicalPassport"]!,
+                        _mindeeService.RecognizeTechnicalPassportAsync,
+                        TechnicalPassportMapper.Map,
+                        d => userSession.TechnicalPassport = (TechnicalPassportModel)d,
+                        d => ((TechnicalPassportModel)d).ToString(),
+                        userSession.Step,
                         cancellationToken);
                 }
                 catch (Exception ex)
@@ -124,50 +88,44 @@ public class DocumentsSubmissionHandler : IMessageHandler
         }
     }
 
-    public async Task Handler
-        (Message message,
-        string endpoint,
-        string accountName,
-        string downloadPath,
-        Func<Dictionary<string, GeneratedFeature>, OperationResultGeneric<IDocumentData>> mapper,
-        Action<IDocumentData> setUserData,
-        Func<IDocumentData, string> generateText,
-        CancellationToken cancellationToken)
+    private async Task ProcessDocumentAsync<TDocument>(
+    long chatId,
+    Message message,
+    string downloadPath,
+    Func<string, Task<OperationResultGeneric<TDocument>>> recognizeFunc,
+    Func<TDocument, IDocumentData> mapFunc,
+    Action<IDocumentData> setData,
+    Func<IDocumentData, string> sendData,
+    BotStep currentStep,
+    CancellationToken cancellationToken)
     {
-        var chatId = message.Chat.Id;
 
+        var userSession = SessionStorage.GetSession(chatId);
         var downloadingResult = await _fileService.DownloadTgFileAsync(message, _botClient, downloadPath);
 
         if (!downloadingResult.IsSuccess || downloadingResult.Data == null)
         {
-            await _botClient.SendMessage(chatId, "Не вдалося отримати фото. Спробуйте ще раз.", cancellationToken: cancellationToken);
-            logger.LogError($"Failed to download file");
-            return;
+            logger.LogError($"{downloadingResult.ErrorMesage}");
+            throw new InvalidOperationException($"Failed to download file: {downloadingResult.ErrorMesage}");
         }
-        var recognizeResult = await _mindeeService.RecognizePassportAsync(downloadingResult.Data, endpoint, accountName);
+        var recognizeResult = await recognizeFunc.Invoke(downloadingResult.Data);
 
         if (!recognizeResult.IsSuccess || recognizeResult.Data == null)
         {
-            await _botClient.SendMessage(chatId, "Не вдалося обробити фото паспорта. Спробуйте ще раз.", cancellationToken: cancellationToken);
             _fileService.DeleteFile(downloadingResult.Data);
             logger.LogError($"Failed to recognize passport: {recognizeResult.ErrorMesage}");
-            return;
+            throw new InvalidOperationException($"Failed to recognize passport: {recognizeResult.ErrorMesage}");
         }
 
         _fileService.DeleteFile(downloadingResult.Data);
 
-        var mapperResult = mapper.Invoke(recognizeResult.Data);
+        var document = mapFunc.Invoke(recognizeResult.Data);
 
-        if (!mapperResult.IsSuccess || mapperResult.Data == null)
-        {
-            await _botClient.SendMessage(chatId, "Не вдалося обробити дані паспорта. Спробуйте ще раз.", cancellationToken: cancellationToken);
-            logger.LogError($"Failed to map data: {mapperResult.ErrorMesage}");
-            return;
-        }
+        setData.Invoke(document);
 
-        setUserData.Invoke(mapperResult.Data);
+        var generatedText = sendData.Invoke(document);
 
-        var preview = generateText.Invoke(mapperResult.Data);
-        await _botClient.SendMessage(chatId, $"Перевірте, чи всі дані правильні:\n\n\r{preview}", replyMarkup: new InlineKeyboardButton[] { "✅ Так", "❌ Ні" }, cancellationToken: cancellationToken);
+        userSession.Step = UserSession.GetNextStep(currentStep);
+        await _botClient.SendMessage(chatId, $"Перевірте, чи всі дані правильні:\n\n\r{generatedText}", replyMarkup: new InlineKeyboardButton[] { "✅ Так", "❌ Ні" }, cancellationToken: cancellationToken);
     }
 }

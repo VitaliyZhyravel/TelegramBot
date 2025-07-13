@@ -1,5 +1,6 @@
 ﻿using Telegram.Bot;
 using Telegram.Bot.Types;
+using Telegram.Bot.Types.ReplyMarkups;
 using TelegramBot.Application.Interfaces.Handlers;
 using TelegramBotConsole.Enums;
 using TelegramBotConsole.User;
@@ -16,31 +17,33 @@ public class ConfirmDataHandler : ICallbackHandler
     }
 
     public bool CanHandle(CallbackQuery callbackQuery) =>
-        callbackQuery.Message != null &&
-        callbackQuery.Message.Text != null &&
-        (callbackQuery.Data == "✅ Так" || callbackQuery.Data == "❌ Ні")&&
+        callbackQuery.Message?.Text != null &&
+        (callbackQuery.Data == "✅ Так" || callbackQuery.Data == "❌ Ні") &&
         callbackQuery.Message.Text.Contains("Перевірте, чи всі дані правильні:");
 
-    public async Task HandleMessageAsync(CallbackQuery callbackQuery, CancellationToken cancellationToken)
+    public async Task HandleMessageAsync(CallbackQuery callbackQuery, long chatId, CancellationToken cancellationToken)
     {
-        var chatId = callbackQuery!.Message!.Chat.Id;
         var userSession = SessionStorage.GetSession(chatId);
 
         if (callbackQuery.Data == "✅ Так")
         {
-            switch (userSession.Step)
-            {
-                case BotStep.PassportFront: userSession.PassportFront!.IsConfirmed = true; break;
-                case BotStep.PassportBack: userSession.PassportBack!.IsConfirmed = true; break;
-                case BotStep.TechnicalPassport: userSession.CarRegistration!.IsConfirmed = true; break;
-            }
-            await _botClient.SendMessage(chatId, "Дякуємо! Ваші дані успішно збережено.", cancellationToken : cancellationToken);
+            await _botClient.SendMessage(chatId, "✅ Дякуємо! Ваші дані підтверджені.", cancellationToken: cancellationToken);
 
-            userSession.Step = BotStep.None;
+            if (userSession.Step == BotStep.WaitingForConfirmPassport)
+            {
+                await _botClient.SendMessage(chatId, "📷 Для продовження оформлення надайте фото техпаспорта", cancellationToken: cancellationToken);
+            }
+            else if (userSession.Step == BotStep.WaitingForConfirmTechnicalPassport)
+            {
+                await _botClient.SendMessage(chatId, "💵 Вартість автострахування — 100$. Чи підходить вам така ціна?", replyMarkup: new InlineKeyboardButton[] { "✅ Так", "❌ Ні" }, cancellationToken: cancellationToken);
+            }
+
+            userSession.Step = UserSession.GetNextStep(userSession.Step);
         }
         else if (callbackQuery.Data == "❌ Ні")
         {
-            await _botClient.SendMessage(chatId, "Будь ласка, надішліть фото ще раз.", cancellationToken: cancellationToken);
+            userSession.Step = UserSession.GetPreviousStep(userSession.Step);
+            await _botClient.SendMessage(chatId, "🔁 Будь ласка, надішліть фото ще раз.", cancellationToken: cancellationToken);
         }
     }
 }

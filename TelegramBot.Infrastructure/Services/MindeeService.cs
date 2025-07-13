@@ -1,42 +1,91 @@
-﻿using Mindee;
+﻿using Microsoft.Extensions.Logging;
+using Mindee;
 using Mindee.Http;
 using Mindee.Input;
-using Mindee.Parsing.Generated;
 using Mindee.Product.Generated;
+using Mindee.Product.InternationalId;
 using TelegramBot.Infrastructure.Interfaces;
 
-namespace  TelegramBotConsole.Services;
+namespace TelegramBotConsole.Services;
 
 public class MindeeService : IMindeeService
 {
     private readonly MindeeClient _client;
+    private readonly ILogger<MindeeService> logger;
 
-    public MindeeService(MindeeClient client)
+    public MindeeService(MindeeClient client, ILogger<MindeeService> logger)
     {
         _client = client;
+        this.logger = logger;
     }
 
-    public async Task<OperationResultGeneric<Dictionary<string, GeneratedFeature>>> RecognizePassportAsync(string filePath,
-        string endpointName, string accountName)
+    public async Task<OperationResultGeneric<InternationalIdV2Document>> RecognizePassportAsync(string filePath)
     {
         try
         {
-            var endpoint = new CustomEndpoint(endpointName, accountName);
+            if (!File.Exists(filePath))
+            {
+                logger.LogError($"Class: {nameof(MindeeService)}\nMethod: {nameof(RecognizePassportAsync)}\nError: File not found at path {filePath}");
+                return OperationResultGeneric<InternationalIdV2Document>.Failure("File not found");
+            }
+
             var inputSource = new LocalInputSource(filePath);
 
-            var apiResponse = await _client.EnqueueAndParseAsync<GeneratedV1>(inputSource, endpoint);
+            var apiResponse = await _client.EnqueueAndParseAsync<InternationalIdV2>(inputSource);
 
-            var generatedFeatures = apiResponse.Document.Inference.Prediction.Fields;
+            var generatedFeatures = apiResponse.Document.Inference.Prediction;
 
-            if (generatedFeatures == null || generatedFeatures.Count == 0)
+            if (generatedFeatures == null)
             {
-                return OperationResultGeneric<Dictionary<string, GeneratedFeature>>.Failure("No features found in the document.");
+                logger.LogError($"Class: {nameof(MindeeService)}\nMethod: {nameof(RecognizePassportAsync)}\nError: Data converted from photos is empty");
+                return OperationResultGeneric<InternationalIdV2Document>.Failure("Data converted from photos is empty");
             }
-            return OperationResultGeneric<Dictionary<string, GeneratedFeature>>.Success(generatedFeatures);
+
+            logger.LogInformation("Passport recognized successfully");
+            return OperationResultGeneric<InternationalIdV2Document>.Success(generatedFeatures);
         }
         catch (Exception ex)
         {
-            return OperationResultGeneric<Dictionary<string, GeneratedFeature>>.Failure($"Error processing document: {ex.Message}");
+            logger.LogError($"Class: {nameof(MindeeService)}\nMethod: {nameof(RecognizePassportAsync)}\nError: Document processing error {ex.Message}");
+            return OperationResultGeneric<InternationalIdV2Document>.Failure($"Document processing error: {ex.Message}");
+        }
+    }
+
+    public async Task<OperationResultGeneric<GeneratedV1>> RecognizeTechnicalPassportAsync(string filePath)
+    {
+        try
+        {
+            if (!File.Exists(filePath))
+            {
+                logger.LogError($"Class: {nameof(MindeeService)}\nMethod: {nameof(RecognizeTechnicalPassportAsync)}\nError: File not found at path {filePath}");
+                return OperationResultGeneric<GeneratedV1>.Failure("File not found");
+            }
+
+            var inputSource = new LocalInputSource(filePath);
+
+            CustomEndpoint endpoint = new CustomEndpoint(
+                endpointName: "technicalpassport",
+                accountName: "VitaliyZhyravel",
+                version: "1"
+                );
+
+            var apiResponse = await _client.EnqueueAndParseAsync<GeneratedV1>(inputSource,endpoint);
+
+            var generatedFeatures = apiResponse.Document.Inference;
+
+            if (generatedFeatures.Prediction.Fields == null)
+            {
+                logger.LogError($"Class: {nameof(MindeeService)}\nMethod: {nameof(RecognizeTechnicalPassportAsync)}\nError: Data converted from photos is empty");
+                return OperationResultGeneric<GeneratedV1>.Failure("Data converted from photos is empty");
+            }
+
+            logger.LogInformation("Passport recognized successfully");
+            return OperationResultGeneric<GeneratedV1>.Success(generatedFeatures);
+        }
+        catch (Exception ex)
+        {
+            logger.LogError($"Class: {nameof(MindeeService)}\nMethod: {nameof(RecognizeTechnicalPassportAsync)}\nError: Document processing error {ex.Message}");
+            return OperationResultGeneric<GeneratedV1>.Failure($"Document processing error: {ex.Message}");
         }
     }
 }

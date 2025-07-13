@@ -1,4 +1,5 @@
-﻿using Telegram.Bot;
+﻿using Microsoft.Extensions.Logging;
+using Telegram.Bot;
 using Telegram.Bot.Types;
 using TelegramBot.Application.Interfaces;
 using TelegramBotConsole;
@@ -7,10 +8,18 @@ namespace TelegramBot.Infrastructure.Services;
 
 public class FileService : IFileService
 {
+    private readonly ILogger<FileService> logger;
+
+    public FileService(ILogger<FileService> logger)
+    {
+        this.logger = logger;
+    }
+
     public void DeleteFile(string filePath)
     {
         if (File.Exists(filePath)) File.Delete(filePath);
     }
+
     public async Task<OperationResultGeneric<string?>> DownloadTgFileAsync(Message message, ITelegramBotClient bot, string path)
     {
         if (message?.Photo != null)
@@ -22,7 +31,8 @@ public class FileService : IFileService
 
             if (!result.IsSuccess)
             {
-                throw new Exception(result.ErrorMesage);
+                logger.LogError($"Class: {nameof(FileService)}\nMethod: {nameof(DownloadTgFileAsync)}\nError: {result.ErrorMesage}");
+                return OperationResultGeneric<string?>.Failure(result.ErrorMesage!);
             }
 
             var filePathFromTelegram = tgFile.FilePath;
@@ -32,18 +42,18 @@ public class FileService : IFileService
 
             if (filePathFromTelegram != null)
             {
-                using (FileStream stream = new FileStream(fullPath, FileMode.OpenOrCreate))
+                using (FileStream stream = new FileStream(fullPath, FileMode.Create))
                 {
                     await bot.DownloadFile(filePathFromTelegram, stream);
                 }
 
+                logger.LogInformation($"File downloaded successfully");
                 return OperationResultGeneric<string?>.Success(fullPath);
             }
         }
+        logger.LogError($"Class: {nameof(FileService)}\nMethod: {nameof(DownloadTgFileAsync)}\nError: No photo found in the message");
         return OperationResultGeneric<string?>.Failure("No photo found in the message");
     }
-
-   
 
     private OperationResultGeneric<string> ValidTgFile(TGFile tgFile)
     {
