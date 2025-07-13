@@ -1,9 +1,8 @@
-﻿using Microsoft.Extensions.Logging;
-using Telegram.Bot;
+﻿using Telegram.Bot;
 using Telegram.Bot.Types;
 using Telegram.Bot.Types.Enums;
 using TelegramBot.Application.Interfaces.Handlers;
-using TelegramBot.Infrastructure.Interfaces;
+using TelegramBotConsole.Enums;
 using TelegramBotConsole.User;
 
 namespace TelegramBot.Application.Telegram.Handlers;
@@ -11,14 +10,10 @@ namespace TelegramBot.Application.Telegram.Handlers;
 public class GreetingHandler : IMessageHandler
 {
     private readonly ITelegramBotClient _botClient;
-    private readonly IOpenAiService _openAiService;
-    private readonly ILogger<GreetingHandler> logger;
 
-    public GreetingHandler(ITelegramBotClient botClient, IOpenAiService openAiService, ILogger<GreetingHandler> logger)
+    public GreetingHandler(ITelegramBotClient botClient)
     {
         _botClient = botClient;
-        _openAiService = openAiService;
-        this.logger = logger;
     }
 
     public bool CanHandle(Message message) => message.Type == MessageType.Text && message.Text != null &&
@@ -26,6 +21,10 @@ public class GreetingHandler : IMessageHandler
 
     public async Task HandleMessageAsync(Message message, long chatId, CancellationToken cancellationToken)
     {
+        var session = SessionStorage.GetSession(chatId);
+
+        session.Step = BotStep.Greeting;    
+
         var greetingText = "👋 Вітаю! Я — Telegram-бот автострахування **PolisUa**\n\n" +
 
                 "Допоможу швидко та зручно оформити автостраховку 🚗💼\n"+
@@ -34,7 +33,7 @@ public class GreetingHandler : IMessageHandler
 
                 "✅ Це займе лише кілька хвилин";
        
-            var session = SessionStorage.GetSession(chatId);
+            
             session.Step = UserSession.GetNextStep(session.Step);
 
             await _botClient.SendMessage(chatId, greetingText, cancellationToken: cancellationToken);
