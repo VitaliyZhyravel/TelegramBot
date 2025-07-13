@@ -18,8 +18,10 @@ public class TelegramUpdateHandler : IUpdateHandler
         this.unknownHandler = unknownHandler;
     }
 
-    public async Task HandleUpdateAsync( Update update, CancellationToken cancellationToken)
+    public async Task HandleUpdateAsync(Update update, CancellationToken cancellationToken)
     {
+        var chatId = update.Message!.Chat.Id;
+
         if (update.Type == UpdateType.Message && update.Message != null)
         {
             var message = update.Message;
@@ -29,13 +31,13 @@ public class TelegramUpdateHandler : IUpdateHandler
             {
                 if (handler.CanHandle(message))
                 {
-                    await handler.HandleMessageAsync(message, cancellationToken);
+                    await handler.HandleMessageAsync(message, chatId, cancellationToken);
                     isHandled = true;
-                    break; 
+                    break;
                 }
             }
             if (!isHandled)
-                await unknownHandler.UnknownMessageHandlerAsync(update);
+                await unknownHandler.UnknownMessageHandlerAsync(update.Message,cancellationToken);
         }
         else if (update.Type == UpdateType.CallbackQuery && update.CallbackQuery != null)
         {
@@ -45,7 +47,7 @@ public class TelegramUpdateHandler : IUpdateHandler
             {
                 if (handler.CanHandle(callbackQuery))
                 {
-                    await handler.HandleMessageAsync(callbackQuery, cancellationToken);
+                    await handler.HandleMessageAsync(callbackQuery, chatId, cancellationToken);
                 }
             }
         }

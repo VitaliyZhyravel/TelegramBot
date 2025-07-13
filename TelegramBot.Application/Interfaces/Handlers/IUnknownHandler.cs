@@ -4,6 +4,6 @@ namespace TelegramBot.Application.Interfaces.Handlers
 {
     public interface IUnknownHandler
     {
-        Task UnknownMessageHandlerAsync(Update update);
+        Task UnknownMessageHandlerAsync(Message message, CancellationToken cancellationToken);
     }
 }

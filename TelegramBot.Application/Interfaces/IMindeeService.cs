@@ -1,10 +1,11 @@
-﻿using Mindee.Parsing.Generated;
+﻿using Mindee.Product.Generated;
+using Mindee.Product.InternationalId;
 using TelegramBotConsole;
 
 namespace TelegramBot.Infrastructure.Interfaces;
 
-public  interface IMindeeService
+public interface IMindeeService
 {
-    Task<OperationResultGeneric<Dictionary<string, GeneratedFeature>>> RecognizePassportAsync(string filePath,
-        string endpointName, string accountName);
+    Task<OperationResultGeneric<InternationalIdV2Document>> RecognizePassportAsync(string filePath);
+    Task<OperationResultGeneric<GeneratedV1>> RecognizeTechnicalPassportAsync(string filePath);
 }
