@@ -20,10 +20,12 @@ public class TelegramUpdateHandler : IUpdateHandler
 
     public async Task HandleUpdateAsync(Update update, CancellationToken cancellationToken)
     {
-        var chatId = update.Message!.Chat.Id;
+       
 
         if (update.Type == UpdateType.Message && update.Message != null)
         {
+            var chatId = update.Message!.Chat.Id;
+
             var message = update.Message;
             var isHandled = false;
 
@@ -41,6 +43,8 @@ public class TelegramUpdateHandler : IUpdateHandler
         }
         else if (update.Type == UpdateType.CallbackQuery && update.CallbackQuery != null)
         {
+            var chatId = update.CallbackQuery.Message!.Chat.Id;
+
             var callbackQuery = update.CallbackQuery;
 
             foreach (var handler in callbackHandlers)
