@@ -4,7 +4,6 @@ using OpenAI.ObjectModels.RequestModels;
 using System.Text;
 using TelegramBot.Application.Rules;
 using TelegramBot.Infrastructure.Interfaces;
-using TelegramBotConsole.Enums;
 using TelegramBotConsole.User;
 
 namespace TelegramBotConsole.Services;
@@ -61,7 +60,7 @@ public class OpenAiBetalgoiService : IOpenAiService
                 ChatMessage.FromUser(RuleForGpt.RuleForGenerateInsuranse(userSession))
 
             },
-            Model = OpenAI.ObjectModels.Models.Gpt_3_5_Turbo
+            Model = OpenAI.ObjectModels.Models.Chatgpt_4o_latest
         });
 
         if (response.Successful)
@@ -89,7 +88,7 @@ public class OpenAiBetalgoiService : IOpenAiService
                 ChatMessage.FromSystem(RuleForGpt.RuleForNotHandleUserMessage()),
                 ChatMessage.FromUser($"Користувач запитує: {userMessage}")
             },
-            Model = OpenAI.ObjectModels.Models.Gpt_3_5_Turbo
+            Model = OpenAI.ObjectModels.Models.Chatgpt_4o_latest,
         });
 
         if (response.Successful)
