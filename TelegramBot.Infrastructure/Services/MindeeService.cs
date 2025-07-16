@@ -25,7 +25,7 @@ public class MindeeService : IMindeeService
         {
             if (!File.Exists(filePath))
             {
-                logger.LogError($"Class: {nameof(MindeeService)}\nMethod: {nameof(RecognizePassportAsync)}\nError: File not found at path {filePath}");
+                logger.LogError($"Class: {nameof(MindeeService)}\nMethod: {nameof(RecognizePassportAsync)}\nError: File not found");
                 return OperationResultGeneric<InternationalIdV2Document>.Failure("File not found");
             }
 
@@ -37,7 +37,7 @@ public class MindeeService : IMindeeService
 
             if (generatedFeatures == null)
             {
-                logger.LogError($"Class: {nameof(MindeeService)}\nMethod: {nameof(RecognizePassportAsync)}\nError: Data converted from photos is empty");
+                logger.LogError($"Class: {nameof(MindeeService)}\nMethod: {nameof(RecognizePassportAsync)}\nError: Data converted from photo is empty");
                 return OperationResultGeneric<InternationalIdV2Document>.Failure("Data converted from photos is empty");
             }
 
@@ -47,7 +47,7 @@ public class MindeeService : IMindeeService
         catch (Exception ex)
         {
             logger.LogError($"Class: {nameof(MindeeService)}\nMethod: {nameof(RecognizePassportAsync)}\nError: Document processing error {ex.Message}");
-            return OperationResultGeneric<InternationalIdV2Document>.Failure($"Document processing error: {ex.Message}");
+            return OperationResultGeneric<InternationalIdV2Document>.Failure($"Document processing\nError: {ex.Message}");
         }
     }
 
@@ -57,7 +57,7 @@ public class MindeeService : IMindeeService
         {
             if (!File.Exists(filePath))
             {
-                logger.LogError($"Class: {nameof(MindeeService)}\nMethod: {nameof(RecognizeTechnicalPassportAsync)}\nError: File not found at path {filePath}");
+                logger.LogError($"Class: {nameof(MindeeService)}\nMethod: {nameof(RecognizeTechnicalPassportAsync)}\nError: File not found");
                 return OperationResultGeneric<GeneratedV1>.Failure("File not found");
             }
 
@@ -75,17 +75,17 @@ public class MindeeService : IMindeeService
 
             if (generatedFeatures.Prediction.Fields == null)
             {
-                logger.LogError($"Class: {nameof(MindeeService)}\nMethod: {nameof(RecognizeTechnicalPassportAsync)}\nError: Data converted from photos is empty");
+                logger.LogError($"Class: {nameof(MindeeService)}\nMethod: {nameof(RecognizeTechnicalPassportAsync)}\nError: Data converted from photo is empty");
                 return OperationResultGeneric<GeneratedV1>.Failure("Data converted from photos is empty");
             }
 
-            logger.LogInformation("Passport recognized successfully");
+            logger.LogInformation("Technical passport recognized successfully");
             return OperationResultGeneric<GeneratedV1>.Success(generatedFeatures);
         }
         catch (Exception ex)
         {
-            logger.LogError($"Class: {nameof(MindeeService)}\nMethod: {nameof(RecognizeTechnicalPassportAsync)}\nError: Document processing error {ex.Message}");
-            return OperationResultGeneric<GeneratedV1>.Failure($"Document processing error: {ex.Message}");
+            logger.LogError($"Class: {nameof(MindeeService)}\nMethod: {nameof(RecognizeTechnicalPassportAsync)}\nError: Document processing\nError: {ex.Message}");
+            return OperationResultGeneric<GeneratedV1>.Failure($"{ex.Message}");
         }
     }
 }

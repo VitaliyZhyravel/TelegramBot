@@ -1,6 +1,5 @@
 ﻿using Mindee.Product.InternationalId;
 using TelegramBot.Domain.Domain;
-using TelegramBotConsole;
 
 namespace TelegramBot.Application.Mappings;
 

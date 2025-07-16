@@ -1,4 +1,5 @@
-﻿using QuestPDF;
+﻿using Microsoft.Extensions.Logging;
+using QuestPDF;
 using QuestPDF.Fluent;
 using QuestPDF.Infrastructure;
 using TelegramBot.Infrastructure.Interfaces;
@@ -7,6 +8,13 @@ namespace TelegramBotConsole.Services;
 
 public class PdfGeneratorService : IPdfGenerator
 {
+    private readonly ILogger<PdfGeneratorService> logger;
+
+    public PdfGeneratorService(ILogger<PdfGeneratorService> logger)
+    {
+        this.logger = logger;
+    }
+
     public void GeneratePdf(string content, string outputPath)
     {
         try
@@ -23,12 +31,12 @@ public class PdfGeneratorService : IPdfGenerator
                 });
             })
             .GeneratePdf(outputPath);
+            logger.LogInformation($"PDF generated successfully");
         }
-        catch (Exception)
+        catch (Exception ex)
         {
-
+            logger.LogInformation($"Class: {nameof(PdfGeneratorService)} Method: {nameof(GeneratePdf)}\nError generating PDF\nError: {ex.Message}");
             throw;
         }
-
     }
 }

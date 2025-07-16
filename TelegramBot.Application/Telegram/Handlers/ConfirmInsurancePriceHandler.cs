@@ -35,12 +35,13 @@ public class ConfirmInsurancePriceHandler : ICallbackHandler
 
         if (callbackQuery.Data == "✅ Так")
         {
+            logger.LogInformation($"Chat {chatId} confirmed insurance price");
+
             var response = await _openAiService.GenerateInsuranceAsync(userSession);
 
             if (string.IsNullOrWhiteSpace(response.Data))
             {
                 await _botClient.SendMessage(chatId, "⚠️ Вибачте, але не вдалося згенерувати страховий поліс. Спробуйте ще раз пізніше.", cancellationToken: cancellationToken);
-                logger.LogError($"{response.ErrorMesage}");
                 return;
             }
 
@@ -56,6 +57,7 @@ public class ConfirmInsurancePriceHandler : ICallbackHandler
         }
         else if (callbackQuery.Data == "❌ Ні")
         {
+            logger.LogInformation($"Chat {chatId} not confirmed insurance price");
             await _botClient.SendMessage(chatId, "Вибачте але 100$ це єдина доступна ціна", cancellationToken: cancellationToken);
             return;
         }
