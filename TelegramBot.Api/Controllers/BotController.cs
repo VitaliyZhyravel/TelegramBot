@@ -10,18 +10,25 @@ namespace TelegramBot.Api.Controllers;
 public class BotController : ControllerBase
 {
     private readonly IUpdateHandler updateHandler;
-    private readonly ITelegramBotClient telegramBot;
+    private readonly ILogger<BotController> logger;
 
-    public BotController(IUpdateHandler updateHandler, ITelegramBotClient telegramBot)
+    public BotController(IUpdateHandler updateHandler, ITelegramBotClient telegramBot,ILogger<BotController> logger)
     {
         this.updateHandler = updateHandler;
-        this.telegramBot = telegramBot;
+        this.logger = logger;
     }
 
     [HttpPost]
     public async Task<IActionResult> Post([FromBody] Update update, CancellationToken cancellationToken)
     {
-        await updateHandler.HandleUpdateAsync(update, cancellationToken);
+        try
+        {
+            await updateHandler.HandleUpdateAsync(update, cancellationToken);
+        }
+        catch (Exception)
+        {
+            logger.LogError("An error occurred while processing the update: {1}", update);
+        }
         return Ok();
     }
 }

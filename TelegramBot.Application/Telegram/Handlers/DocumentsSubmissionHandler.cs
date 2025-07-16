@@ -127,5 +127,7 @@ public class DocumentsSubmissionHandler : IMessageHandler
 
         userSession.Step = UserSession.GetNextStep(currentStep);
         await _botClient.SendMessage(chatId, $"Перевірте, чи всі дані правильні:\n\n\r{generatedText}", replyMarkup: new InlineKeyboardButton[] { "✅ Так", "❌ Ні" }, cancellationToken: cancellationToken);
+
+        logger.LogInformation($"ChatId {chatId}\nDocument was processed successfully");
     }
 }
