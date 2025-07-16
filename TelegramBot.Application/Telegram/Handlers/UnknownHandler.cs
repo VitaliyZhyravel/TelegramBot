@@ -37,7 +37,7 @@ namespace TelegramBot.Application.Telegram.Handlers
         {
             return step switch
             {
-                BotStep.Greeting => "🙌 Щоб почати роботу з ботом введіть команду ",
+                BotStep.Greeting => "🙌 Щоб почати роботу з ботом введіть команду /start",
                 BotStep.Passport => "📷 Для продовження оформлення автостраховки — надайте фото паспорта.",
                 BotStep.WaitingForConfirmPassport => "✅ Перевірте, чи всі дані з паспорта зчитано правильно.",
                 BotStep.TechnicalPassport => "📷 Для продовження надайте фото техпаспорта.",
