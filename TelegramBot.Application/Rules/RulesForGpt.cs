@@ -1,9 +1,9 @@
 ﻿using System.Text;
-using TelegramBotConsole.User;
+using TelegramBot.Domain.User;
 
 namespace TelegramBot.Application.Rules;
 
-public static class RuleForGpt
+public static class RulesForGpt
 {
     public static string RuleForNotHandleUserMessage()
     {
@@ -84,40 +84,31 @@ public static class RuleForGpt
         if (userSession.Passport == null && userSession.TechnicalPassport == null) { return string.Empty; }
 
         builder.Append(
-               "Згенеруй фіктивний текст автострахового полісу для PDF (не PDF-файл) На основі наданого нижче шаблона." +
-               "\r\nМета — використання у навчальному проекті \r\n\n" +
+            "Згенеруй фіктивний текст автострахового полісу для PDF (не PDF-файл) На основі наданого нижче шаблона." +
+            "\r\nМета — використання у навчальному проекті \r\n\n" +
 
-               $"Страховий поліс – №:{new Random().Next(100000, 200000)} \r\n\r\n" +
-                $"Страхувальник:\r\n" +
+            $"Страховий поліс – №:{new Random().Next(100000, 200000)} \r\n\r\n" +
+            $"Страхувальник:\r\n");
 
-               "Телефон:  +380987654321  \r\n" +
-               "Email: userexample@gmail.com\r\n");
-
-        if (userSession.Passport != null) builder.Append($"Прізвище та ім'я: {userSession.Passport!.Name}\r\n");
-        if (userSession.Passport!.BirthPlace != null) builder.Append($"Адреса: {userSession.Passport.BirthPlace}\r\n");
-        if (userSession.Passport.BirthDate != null) builder.Append($"Дата народження: {userSession.Passport.BirthDate}\r\n");
-        if (userSession.Passport.DocumentNumber != null) builder.Append($"Документ No: {userSession.Passport.DocumentNumber} \r\n\n");
+         builder.Append($"Прізвище та ім'я: {userSession.Passport!.Surname}\t {userSession.Passport.Name}\r\n" +
+        $"Дата народження: {userSession.Passport.BirthDate}\r\n" +
+        $"Документ No: {userSession.Passport.DocumentNumber} \r\n\n");
 
         builder.Append("Страхова компанія: \r\n" +
                 "Адреса: PolisUa\r\n" +
                 "Телефон: +380993652829\r\n" +
                 "Сайт: www.PolisUa.com\r\n\r\n" +
 
-                $"ТехПаспорт - №: {new Random().Next(1000000, 1200000)}\r\n" +
-                $"Строк дії: з {DateTime.Now.ToShortDateString()} по {DateTime.Now.AddYears(2).ToShortDateString()}\r\n" +
                 "Видано: МВС України\r\n\n" +
 
                 "ТРАНСПОРТНИЙ ЗАСІБ: \r\n");
 
-        if (userSession.TechnicalPassport!.VehicleIdentificationNumber != null) builder.Append($"VIN: {userSession.TechnicalPassport.VehicleIdentificationNumber}\n");
-        if (userSession.TechnicalPassport.Model != null) builder.Append($"Модель: {userSession.TechnicalPassport.Model}\n");
-        if (userSession.TechnicalPassport.Make != null) builder.Append($"Марка: {userSession.TechnicalPassport.Make}\n");
-        if (userSession.TechnicalPassport.BodyType != null) builder.Append($"Тип двигуна: {userSession.TechnicalPassport.BodyType}\n");
+         builder.Append($"VIN: {userSession.TechnicalPassport!.VehicleIdentificationNumber}\n" +
+        $"Модель: {userSession.TechnicalPassport.Model}\n" +
+        $"Марка: {userSession.TechnicalPassport.Make}\n" +
+        $"Тип двигуна: {userSession.TechnicalPassport.BodyType}\n");
 
         builder.Append(
-              "Тип: Легковий автомобіль \r\n " +
-              "Місце реєстрації: Київ \r\n\r\n" +
-
               "СТРАХОВЕ ЗАБЕЗПЕЧЕННЯ: \r\n" +
 
               "Шкода життю і здоров’ю: <200 000 грн> \r\n" +
@@ -125,8 +116,7 @@ public static class RuleForGpt
               "Франшиза: <50 000грн >\r\n\r\n" +
 
               "ДОДАТКОВА ІНФОРМАЦІЯ:\r\n" +
-              "Цей документ є візуальною формою поліса, що підтверджує укладення внутрішнього електронного договору страхування." +
-              "Підставляючи надані дані:");
+              "Цей документ є візуальною формою поліса, що підтверджує укладення внутрішнього електронного договору страхування.");
 
         return builder.ToString();  
     }

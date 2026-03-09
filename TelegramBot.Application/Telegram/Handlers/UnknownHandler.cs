@@ -1,9 +1,9 @@
 ﻿using Telegram.Bot;
 using Telegram.Bot.Types;
+using TelegramBot.Application.Interfaces;
 using TelegramBot.Application.Interfaces.Handlers;
-using TelegramBot.Infrastructure.Interfaces;
-using TelegramBotConsole.Enums;
-using TelegramBotConsole.User;
+using TelegramBot.Domain.Enums;
+using TelegramBot.Domain.User;
 
 namespace TelegramBot.Application.Telegram.Handlers
 {
@@ -42,7 +42,9 @@ namespace TelegramBot.Application.Telegram.Handlers
                 BotStep.WaitingForConfirmPassport => "✅ Перевірте, чи всі дані з паспорта зчитано правильно.",
                 BotStep.TechnicalPassport => "📷 Для продовження надайте фото техпаспорта.",
                 BotStep.WaitingForConfirmTechnicalPassport => "✅ Перевірте, чи всі дані з техпаспорта зчитано правильно.",
-                BotStep.GenerateInsurance => "💵 Підтвердіть вартість формування страховки"
+                BotStep.WaitingForConfirmPrice => "💵 Підтвердіть вартість формування страховки",
+                BotStep.Complete => String.Empty,
+                _ => throw new ArgumentOutOfRangeException(nameof(step), step, null)
             };
         }
     }

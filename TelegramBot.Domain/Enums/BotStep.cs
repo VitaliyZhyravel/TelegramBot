@@ -1,11 +1,12 @@
-﻿namespace TelegramBotConsole.Enums;
+﻿namespace TelegramBot.Domain.Enums;
 
 public enum BotStep : byte
 {
-    Greeting = 0,
-    Passport = 1,
-    WaitingForConfirmPassport = 2,
-    TechnicalPassport = 3,
-    WaitingForConfirmTechnicalPassport = 4,
-    GenerateInsurance = 5
+    Greeting,
+    Passport,
+    WaitingForConfirmPassport, 
+    TechnicalPassport, 
+    WaitingForConfirmTechnicalPassport, 
+    WaitingForConfirmPrice, 
+    Complete
 }

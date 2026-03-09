@@ -1,79 +1,122 @@
-﻿using Microsoft.Extensions.Logging;
-using OpenAI.Managers;
-using OpenAI.ObjectModels.RequestModels;
-using System.Text;
+﻿using Betalgo.Ranul.OpenAI.Managers;
+using Betalgo.Ranul.OpenAI.ObjectModels.RequestModels;
+using Microsoft.Extensions.Logging;
+using TelegramBot.Application.Interfaces;
 using TelegramBot.Application.Rules;
-using TelegramBot.Infrastructure.Interfaces;
-using TelegramBotConsole.User;
+using TelegramBot.Domain.User;
+using TelegramBotConsole;
 
-namespace TelegramBotConsole.Services;
+namespace TelegramBot.Infrastructure.Services;
 
 public class OpenAiBetalgoiService : IOpenAiService
 {
     private readonly OpenAIService _openAi;
-    private readonly ILogger<OpenAiBetalgoiService> logger;
+    private readonly ILogger<OpenAiBetalgoiService> _logger;
 
-    public OpenAiBetalgoiService(OpenAIService openAi, ILogger<OpenAiBetalgoiService> logger)
+    public OpenAiBetalgoiService(
+        OpenAIService openAi,
+        ILogger<OpenAiBetalgoiService> logger)
     {
         _openAi = openAi;
-        this.logger = logger;
+        _logger = logger;
     }
 
     public async Task<OperationResultGeneric<string>> GenerateInsuranceAsync(UserSession userSession)
     {
-        StringBuilder sb = new StringBuilder();
-
-        var response = await _openAi.ChatCompletion.CreateCompletion(new ChatCompletionCreateRequest
+        try
         {
-            Messages = new List<ChatMessage>
+            var response = await _openAi.ChatCompletion.CreateCompletion(
+                new ChatCompletionCreateRequest
+                {
+                    Messages = new List<ChatMessage>
+                    {
+                        ChatMessage.FromSystem(
+                            "Ти — помічник, який генерує приклади текстів страхових полісів для навчальних або демонстраційних проектів. " +
+                            "Твоє завдання — створити фіктивний текст автостраховки по шаблону, наданому нижче."
+                        ),
+                        ChatMessage.FromUser(RulesForGpt.RuleForGenerateInsuranse(userSession))
+                    },
+                    Model = "gpt-4o"
+                });
+
+            if (response.Successful)
             {
-                ChatMessage.FromSystem("Ти — помічник, який генерує приклади текстів страхових полісів для навчальних або демонстраційних проектів. " +
-                "Твоє завдання — створити фіктивний текст автостраховки  по шаблону наданому нижче."),
-                ChatMessage.FromUser(RuleForGpt.RuleForGenerateInsuranse(userSession))
+                var responseMessage = response.Choices.FirstOrDefault()?.Message.Content;
 
-            },
-            Model = OpenAI.ObjectModels.Models.Chatgpt_4o_latest
-        });
-
-        if (response.Successful)
-        {
-            var responseMessage = response.Choices.FirstOrDefault()?.Message?.Content;
-
-            if (responseMessage != null)
-            {
-                logger.LogInformation("Insurance text generated successfully");
-                return OperationResultGeneric<string>.Success(responseMessage);
+                if (!string.IsNullOrWhiteSpace(responseMessage))
+                {
+                    _logger.LogInformation("Insurance text generated successfully");
+                    return OperationResultGeneric<string>.Success(responseMessage);
+                }
             }
-        }
 
-        logger.LogError($"Class: {nameof(OpenAiBetalgoiService)} Method: {nameof(GenerateReplyToUserQuestion)}\nInsuranse text not create successfully\nError: {response.Error}");
-        return OperationResultGeneric<string>.Failure($"Error: {response.Error}");
+            _logger.LogError(
+                "Class: {ClassName}\nMethod: {MethodName}\nInsurance text was not generated.\nError: {Error}",
+                nameof(OpenAiBetalgoiService),
+                nameof(GenerateInsuranceAsync),
+                response.Error?.Message ?? response.Error?.ToString());
+
+            return OperationResultGeneric<string>.Failure(
+                response.Error?.Message ?? "OpenAI request failed");
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(
+                ex,
+                "Class: {ClassName}\nMethod: {MethodName}\nUnexpected error while generating insurance text",
+                nameof(OpenAiBetalgoiService),
+                nameof(GenerateInsuranceAsync));
+
+            return OperationResultGeneric<string>.Failure(
+                $"Unexpected error: {ex.Message}");
+        }
     }
 
-    public async Task<OperationResultGeneric<string>> GenerateReplyToUserQuestion(string userMessage) 
+    public async Task<OperationResultGeneric<string>> GenerateReplyToUserQuestion(string userMessage)
     {
-
-        var response = await _openAi.ChatCompletion.CreateCompletion(new ChatCompletionCreateRequest
+        try
         {
-            Messages = new List<ChatMessage>
-            {
-                ChatMessage.FromSystem(RuleForGpt.RuleForNotHandleUserMessage()),
-                ChatMessage.FromUser($"Користувач запитує: {userMessage}")
-            },
-            Model = OpenAI.ObjectModels.Models.Chatgpt_4o_latest,
-        });
+            var response = await _openAi.ChatCompletion.CreateCompletion(
+                new ChatCompletionCreateRequest
+                {
+                    Messages = new List<ChatMessage>
+                    {
+                        ChatMessage.FromSystem(RulesForGpt.RuleForNotHandleUserMessage()),
+                        ChatMessage.FromUser($"Користувач запитує: {userMessage}")
+                    },
+                    Model = "gpt-4o"
+                });
 
-        if (response.Successful)
-        {
-            var responseMessage = response.Choices.FirstOrDefault()?.Message?.Content;
-            if (responseMessage != null)
+            if (response.Successful)
             {
-                logger.LogInformation("Reply on user question generated successfully");
-                return OperationResultGeneric<string>.Success(responseMessage);
+                var responseMessage = response.Choices.FirstOrDefault()?.Message.Content;
+
+                if (!string.IsNullOrWhiteSpace(responseMessage))
+                {
+                    _logger.LogInformation("Reply on user question generated successfully");
+                    return OperationResultGeneric<string>.Success(responseMessage);
+                }
             }
-        }
 
-        logger.LogError($"Class: {nameof(OpenAiBetalgoiService)} Method: {nameof(GenerateReplyToUserQuestion)}\nReply on user question not generated successfully\nError: {response.Error}");
-        return OperationResultGeneric<string>.Failure($"{response.Error}");
+            _logger.LogError(
+                "Class: {ClassName}\nMethod: {MethodName}\nReply was not generated.\nError: {Error}",
+                nameof(OpenAiBetalgoiService),
+                nameof(GenerateReplyToUserQuestion),
+                response.Error?.Message ?? response.Error?.ToString());
+
+            return OperationResultGeneric<string>.Failure(
+                response.Error?.Message ?? "OpenAI request failed");
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(
+                ex,
+                "Class: {ClassName}\nMethod: {MethodName}\nUnexpected error while generating reply",
+                nameof(OpenAiBetalgoiService),
+                nameof(GenerateReplyToUserQuestion));
+
+            return OperationResultGeneric<string>.Failure(
+                $"Unexpected error: {ex.Message}");
+        }
     }
 }

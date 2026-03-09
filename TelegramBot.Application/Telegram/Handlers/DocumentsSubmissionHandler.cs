@@ -4,38 +4,27 @@ using Telegram.Bot;
 using Telegram.Bot.Types;
 using Telegram.Bot.Types.Enums;
 using Telegram.Bot.Types.ReplyMarkups;
+using TelegramBot.Application.Interfaces;
 using TelegramBot.Application.Interfaces.Handlers;
 using TelegramBot.Application.Mappings;
-using TelegramBot.Domain.Domain;
-using TelegramBot.Infrastructure.Interfaces;
+using TelegramBot.Domain.Enums;
+using TelegramBot.Domain.Models;
+using TelegramBot.Domain.User;
 using TelegramBotConsole;
-using TelegramBotConsole.Enums;
-using TelegramBotConsole.User;
 
 namespace TelegramBot.Application.Telegram.Handlers;
 
-public class DocumentsSubmissionHandler : IMessageHandler
+public class DocumentsSubmissionHandler(
+    IFileService fileService,
+    ITelegramBotClient botClient,
+    IConfiguration configuration,
+    IMindeeService mindeeService,
+    ILogger<DocumentsSubmissionHandler> logger)
+    : IMessageHandler
 {
-    private readonly Interfaces.IFileService _fileService;
-    private readonly ITelegramBotClient _botClient;
-    private readonly IConfiguration _configuration;
-    private readonly IMindeeService _mindeeService;
-    private readonly ILogger<DocumentsSubmissionHandler> logger;
-
-    public DocumentsSubmissionHandler(Interfaces.IFileService fileService, ITelegramBotClient botClient,
-        IConfiguration configuration, IMindeeService mindeeService, ILogger<DocumentsSubmissionHandler> logger)
-    {
-        _fileService = fileService;
-        _botClient = botClient;
-        _configuration = configuration;
-        _mindeeService = mindeeService;
-        this.logger = logger;
-    }
-
     public bool CanHandle(Message message) =>
-        message != null &&
         message.Type == MessageType.Photo && (SessionStorage.GetSession(message.Chat.Id).Step
-        == BotStep.Passport || SessionStorage.GetSession(message!.Chat.Id).Step == BotStep.TechnicalPassport);
+        == BotStep.Passport || SessionStorage.GetSession(message.Chat.Id).Step == BotStep.TechnicalPassport);
 
     public async Task HandleMessageAsync(Message message, long chatId, CancellationToken cancellationToken)
     {
@@ -49,8 +38,8 @@ public class DocumentsSubmissionHandler : IMessageHandler
                 {
                     await ProcessDocumentAsync(chatId,
                         message,
-                        _configuration["DownloadingPaths:PassportFront"]!,
-                        _mindeeService.RecognizePassportAsync,
+                        configuration["DownloadingPaths:PassportFront"]!,
+                        mindeeService.RecognizePassportAsync,
                         PassportMapper.Map,
                         d => userSession.Passport = (PassportModel)d,
                         d => ((PassportModel)d).ToString(),
@@ -60,7 +49,7 @@ public class DocumentsSubmissionHandler : IMessageHandler
                 catch (Exception ex)
                 {
                     logger.LogError($"Error in DocumentsSubmissionHandler: {ex.Message}\n{ex.StackTrace}");
-                    await _botClient.SendMessage(message.Chat.Id, "⚠️ Сталася помилка при обробці документа. Спробуйте ще раз.");
+                    await botClient.SendMessage(message.Chat.Id, "⚠️ Сталася помилка при обробці документа. Спробуйте ще раз.");
                 }
 
                 break;
@@ -71,8 +60,8 @@ public class DocumentsSubmissionHandler : IMessageHandler
                 {
                     await ProcessDocumentAsync(chatId,
                         message,
-                        _configuration["DownloadingPaths:TechnicalPassport"]!,
-                        _mindeeService.RecognizeTechnicalPassportAsync,
+                        configuration["DownloadingPaths:TechnicalPassport"]!,
+                        mindeeService.RecognizeTechnicalPassportAsync,
                         TechnicalPassportMapper.Map,
                         d => userSession.TechnicalPassport = (TechnicalPassportModel)d,
                         d => ((TechnicalPassportModel)d).ToString(),
@@ -82,7 +71,7 @@ public class DocumentsSubmissionHandler : IMessageHandler
                 catch (Exception ex)
                 {
                     logger.LogError($"Error in DocumentsSubmissionHandler: {ex.Message}\n{ex.StackTrace}");
-                    await _botClient.SendMessage(message.Chat.Id, "⚠️ Сталася помилка при обробці документа. Спробуйте ще раз.");
+                    await botClient.SendMessage(message.Chat.Id, "⚠️ Сталася помилка при обробці документа. Спробуйте ще раз.");
                 }
                 break;
         }
@@ -101,7 +90,7 @@ public class DocumentsSubmissionHandler : IMessageHandler
     {
 
         var userSession = SessionStorage.GetSession(chatId);
-        var downloadingResult = await _fileService.DownloadTgFileAsync(message, _botClient, downloadPath);
+        var downloadingResult = await fileService.DownloadTgFileAsync(message, botClient, downloadPath);
 
         if (!downloadingResult.IsSuccess || downloadingResult.Data == null)
         {
@@ -112,12 +101,12 @@ public class DocumentsSubmissionHandler : IMessageHandler
 
         if (!recognizeResult.IsSuccess || recognizeResult.Data == null)
         {
-            _fileService.DeleteFile(downloadingResult.Data);
+            fileService.DeleteFile(downloadingResult.Data);
             logger.LogError($"Failed to recognize passport: {recognizeResult.ErrorMesage}");
             throw new InvalidOperationException($"Failed to recognize passport: {recognizeResult.ErrorMesage}");
         }
 
-        _fileService.DeleteFile(downloadingResult.Data);
+        fileService.DeleteFile(downloadingResult.Data);
 
         var document = mapFunc.Invoke(recognizeResult.Data);
 
@@ -126,7 +115,7 @@ public class DocumentsSubmissionHandler : IMessageHandler
         var generatedText = sendData.Invoke(document);
 
         userSession.Step = UserSession.GetNextStep(currentStep);
-        await _botClient.SendMessage(chatId, $"Перевірте, чи всі дані правильні:\n\n\r{generatedText}", replyMarkup: new InlineKeyboardButton[] { "✅ Так", "❌ Ні" }, cancellationToken: cancellationToken);
+        await botClient.SendMessage(chatId, $"Перевірте, чи всі дані правильні:\n\n\r{generatedText}", replyMarkup: new InlineKeyboardButton[] { "✅ Так", "❌ Ні" }, cancellationToken: cancellationToken);
 
         logger.LogInformation($"ChatId {chatId}\nDocument was processed successfully");
     }

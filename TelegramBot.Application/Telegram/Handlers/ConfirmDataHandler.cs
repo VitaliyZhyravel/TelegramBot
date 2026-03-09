@@ -3,22 +3,14 @@ using Telegram.Bot;
 using Telegram.Bot.Types;
 using Telegram.Bot.Types.ReplyMarkups;
 using TelegramBot.Application.Interfaces.Handlers;
-using TelegramBotConsole.Enums;
-using TelegramBotConsole.User;
+using TelegramBot.Domain.Enums;
+using TelegramBot.Domain.User;
 
 namespace TelegramBot.Application.Telegram.Handlers;
 
-public class ConfirmDataHandler : ICallbackHandler
+public class ConfirmDataHandler(ITelegramBotClient botClient, ILogger<ConfirmDataHandler> logger)
+    : ICallbackHandler
 {
-    private readonly ITelegramBotClient _botClient;
-    private readonly ILogger<ConfirmDataHandler> logger;
-
-    public ConfirmDataHandler(ITelegramBotClient botClient,ILogger<ConfirmDataHandler> logger)
-    {
-        _botClient = botClient;
-        this.logger = logger;
-    }
-
     public bool CanHandle(CallbackQuery callbackQuery) =>
         callbackQuery.Message?.Text != null &&
         (callbackQuery.Data == "✅ Так" || callbackQuery.Data == "❌ Ні") &&
@@ -30,16 +22,16 @@ public class ConfirmDataHandler : ICallbackHandler
 
         if (callbackQuery.Data == "✅ Так")
         {
-            await _botClient.SendMessage(chatId, "✅ Дякуємо! Ваші дані підтверджені.", cancellationToken: cancellationToken);
+            await botClient.SendMessage(chatId, "✅ Дякуємо! Ваші дані підтверджені.", cancellationToken: cancellationToken);
 
             if (userSession.Step == BotStep.WaitingForConfirmPassport)
             {
-                await _botClient.SendMessage(chatId, "📷 Для продовження оформлення надайте фото техпаспорта", cancellationToken: cancellationToken);
+                await botClient.SendMessage(chatId, "📷 Для продовження оформлення надайте фото техпаспорта", cancellationToken: cancellationToken);
                 logger.LogInformation($"Chat {chatId} confirmed data: Passport");
             }
             else if (userSession.Step == BotStep.WaitingForConfirmTechnicalPassport)
             {
-                await _botClient.SendMessage(chatId, "💵 Вартість автострахування — 100$. Чи підходить вам така ціна?", replyMarkup: new InlineKeyboardButton[] { "✅ Так", "❌ Ні" }, cancellationToken: cancellationToken);
+                await botClient.SendMessage(chatId, "💵 Вартість автострахування — 100$. Чи підходить вам така ціна?", replyMarkup: new InlineKeyboardButton[] { "✅ Так", "❌ Ні" }, cancellationToken: cancellationToken);
                 logger.LogInformation($"Chat {chatId} confirmed data: Technical Passport");
             }
 
@@ -48,7 +40,7 @@ public class ConfirmDataHandler : ICallbackHandler
         else if (callbackQuery.Data == "❌ Ні")
         {
             userSession.Step = UserSession.GetPreviousStep(userSession.Step);
-            await _botClient.SendMessage(chatId, "🔁 Будь ласка, надішліть фото ще раз.", cancellationToken: cancellationToken);
+            await botClient.SendMessage(chatId, "🔁 Будь ласка, надішліть фото ще раз.", cancellationToken: cancellationToken);
             logger.LogInformation($"Chat {chatId} not confirmed data ");
         }
     }

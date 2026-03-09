@@ -2,8 +2,8 @@
 using Telegram.Bot.Types;
 using Telegram.Bot.Types.Enums;
 using TelegramBot.Application.Interfaces.Handlers;
-using TelegramBotConsole.Enums;
-using TelegramBotConsole.User;
+using TelegramBot.Domain.Enums;
+using TelegramBot.Domain.User;
 
 namespace TelegramBot.Application.Telegram.Handlers;
 

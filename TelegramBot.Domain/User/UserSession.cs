@@ -1,7 +1,7 @@
-﻿using TelegramBot.Application.Mappings;
-using TelegramBotConsole.Enums;
+﻿using TelegramBot.Domain.Enums;
+using TelegramBot.Domain.Models;
 
-namespace TelegramBotConsole.User;
+namespace TelegramBot.Domain.User;
 
 public class UserSession
 {
@@ -20,7 +20,7 @@ public class UserSession
     public static BotStep GetPreviousStep(BotStep currentStep)
     {
         var values = Enum.GetValues(typeof(BotStep)).Cast<BotStep>().ToList();
-        int index = values.IndexOf(currentStep);
+        var index = values.IndexOf(currentStep);
 
         return (index >= 1 && index < values.Count - 1)
             ? values[index - 1]

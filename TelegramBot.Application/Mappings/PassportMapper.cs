@@ -1,41 +1,29 @@
-﻿using Mindee.Product.InternationalId;
-using TelegramBot.Domain.Domain;
+﻿using Mindee.Parsing.V2.Field;
+using TelegramBot.Domain.Models;
 
 namespace TelegramBot.Application.Mappings;
-
+    
 public static class PassportMapper
 {
-    public static IDocumentData Map(InternationalIdV2Document dataFromFile)
+    public static IDocumentData Map(InferenceFields fields)
     {
-        PassportModel passportModel = new PassportModel();
+        return new PassportModel
+        {
+            Name = GetValue(fields, "given_names"),
+            Surname = GetValue(fields, "surnames"),
+            BirthDate = GetValue(fields, "date_of_birth"),
+            Nationality = GetValue(fields, "nationality"),
+            DocumentNumber = GetValue(fields, "document_number"),
+        };
+    }
 
-        if (dataFromFile.GivenNames?.Any(g => !string.IsNullOrWhiteSpace(g.Value)) == true)
-            passportModel.Name = string.Join(" ", dataFromFile.GivenNames.Select(f => f.Value));
+    private static string? GetValue(InferenceFields fields, string key)
+    {
+        if (!fields.TryGetValue(key, out var field))
+            return null;
 
-        if (dataFromFile.Surnames?.Any(s => !string.IsNullOrWhiteSpace(s.Value)) == true)
-            passportModel.Surname = string.Join(" ", dataFromFile.Surnames.Select(f => f.Value));
+        var value = field?.SimpleField?.Value?.ToString();
 
-        if (!string.IsNullOrWhiteSpace(dataFromFile.BirthDate?.Value))
-            passportModel.BirthDate = dataFromFile.BirthDate.Value;
-
-        if (!string.IsNullOrWhiteSpace(dataFromFile.BirthPlace?.Value))
-            passportModel.BirthPlace = dataFromFile.BirthPlace.Value;
-
-        if (!string.IsNullOrWhiteSpace(dataFromFile.Nationality?.Value))
-            passportModel.Nationality = dataFromFile.Nationality.Value;
-
-        if (!string.IsNullOrWhiteSpace(dataFromFile.Sex?.Value))
-            passportModel.Sex = dataFromFile.Sex.Value;
-
-        if (!string.IsNullOrWhiteSpace(dataFromFile.DocumentNumber?.Value))
-            passportModel.DocumentNumber = dataFromFile.DocumentNumber.Value;
-
-        if (!string.IsNullOrWhiteSpace(dataFromFile.IssueDate?.Value))
-            passportModel.IssueDate = dataFromFile.IssueDate.Value;
-
-        if (!string.IsNullOrWhiteSpace(dataFromFile.ExpiryDate?.Value))
-            passportModel.ExpiryDate = dataFromFile.ExpiryDate.Value;
-
-        return passportModel;
+        return string.IsNullOrWhiteSpace(value) ? null : value?.Trim();
     }
 }

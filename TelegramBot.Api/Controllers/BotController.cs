@@ -25,9 +25,9 @@ public class BotController : ControllerBase
         {
             await updateHandler.HandleUpdateAsync(update, cancellationToken);
         }
-        catch (Exception)
+        catch (Exception ex)
         {
-            logger.LogError("An error occurred while processing the update: {1}", update);
+            logger.LogError($"An error occurred while processing the update. Error : {ex.Message}");
         }
         return Ok();
     }

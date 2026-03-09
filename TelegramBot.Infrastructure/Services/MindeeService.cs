@@ -1,91 +1,156 @@
 ﻿using Microsoft.Extensions.Logging;
 using Mindee;
-using Mindee.Http;
 using Mindee.Input;
-using Mindee.Product.Generated;
-using Mindee.Product.InternationalId;
-using TelegramBot.Infrastructure.Interfaces;
+using Mindee.Parsing.V2.Field;
+using TelegramBot.Application.Interfaces;
+using TelegramBotConsole;
 
-namespace TelegramBotConsole.Services;
+namespace TelegramBot.Infrastructure.Services;
 
 public class MindeeService : IMindeeService
 {
-    private readonly MindeeClient _client;
-    private readonly ILogger<MindeeService> logger;
+    private readonly MindeeClientV2 _clientV2;
+    private readonly ILogger<MindeeService> _logger;
+    private const string PassportModelId = "30bdc2eb-45da-4522-8284-15d5ab533dd2";
+    private const string TechnicalPassportModelId = "a5f69b32-777e-436e-bb0d-4f51b52471c6"; 
 
-    public MindeeService(MindeeClient client, ILogger<MindeeService> logger)
+    public MindeeService(ILogger<MindeeService> logger, MindeeClientV2 clientV2)
     {
-        _client = client;
-        this.logger = logger;
+        _logger = logger;
+        _clientV2 = clientV2;
     }
 
-    public async Task<OperationResultGeneric<InternationalIdV2Document>> RecognizePassportAsync(string filePath)
+    public async Task<OperationResultGeneric<InferenceFields>> RecognizePassportAsync(string filePath)
     {
         try
         {
+            if (string.IsNullOrWhiteSpace(filePath))
+            {
+                _logger.LogError(
+                    "Class: {ClassName}\nMethod: {MethodName}\nError: File path is empty",
+                    nameof(MindeeService),
+                    nameof(RecognizePassportAsync));
+
+                return OperationResultGeneric<InferenceFields>.Failure("File path is empty");
+            }
+
             if (!File.Exists(filePath))
             {
-                logger.LogError($"Class: {nameof(MindeeService)}\nMethod: {nameof(RecognizePassportAsync)}\nError: File not found");
-                return OperationResultGeneric<InternationalIdV2Document>.Failure("File not found");
+                _logger.LogError(
+                    "Class: {ClassName}\nMethod: {MethodName}\nError: File not found",
+                    nameof(MindeeService),
+                    nameof(RecognizePassportAsync));
+
+                return OperationResultGeneric<InferenceFields>.Failure("File not found");
             }
 
             var inputSource = new LocalInputSource(filePath);
 
-            var apiResponse = await _client.EnqueueAndParseAsync<InternationalIdV2>(inputSource);
+            var inferenceParams = new InferenceParameters(
+                modelId: PassportModelId,
+                rag: null,
+                rawText: null,
+                polygon: null,
+                confidence: null
+            );
 
-            var generatedFeatures = apiResponse.Document.Inference.Prediction;
+            var response = await _clientV2.EnqueueAndGetInferenceAsync(inputSource, inferenceParams);
 
-            if (generatedFeatures == null)
+            var fields = response?.Inference?.Result?.Fields;
+
+            if (fields == null)
             {
-                logger.LogError($"Class: {nameof(MindeeService)}\nMethod: {nameof(RecognizePassportAsync)}\nError: Data converted from photo is empty");
-                return OperationResultGeneric<InternationalIdV2Document>.Failure("Data converted from photos is empty");
+                _logger.LogError(
+                    "Class: {ClassName}\nMethod: {MethodName}\nError: Data converted from photo is empty",
+                    nameof(MindeeService),
+                    nameof(RecognizePassportAsync));
+
+                return OperationResultGeneric<InferenceFields>.Failure("Data converted from photo is empty");
             }
 
-            logger.LogInformation("Passport recognized successfully");
-            return OperationResultGeneric<InternationalIdV2Document>.Success(generatedFeatures);
+            _logger.LogInformation(
+                "Class: {ClassName}\nMethod: {MethodName}\nMessage: Passport recognized successfully",
+                nameof(MindeeService),
+                nameof(RecognizePassportAsync));
+
+            return OperationResultGeneric<InferenceFields>.Success(fields);
         }
         catch (Exception ex)
         {
-            logger.LogError($"Class: {nameof(MindeeService)}\nMethod: {nameof(RecognizePassportAsync)}\nError: Document processing error {ex.Message}");
-            return OperationResultGeneric<InternationalIdV2Document>.Failure($"Document processing\nError: {ex.Message}");
+            _logger.LogError(
+                ex,
+                "Class: {ClassName}\nMethod: {MethodName}\nError: Document processing error",
+                nameof(MindeeService),
+                nameof(RecognizePassportAsync));
+
+            return OperationResultGeneric<InferenceFields>.Failure($"Document processing error: {ex.Message}");
         }
     }
 
-    public async Task<OperationResultGeneric<GeneratedV1>> RecognizeTechnicalPassportAsync(string filePath)
+    public async Task<OperationResultGeneric<InferenceFields>> RecognizeTechnicalPassportAsync(string filePath)
     {
         try
         {
+            if (string.IsNullOrWhiteSpace(filePath))
+            {
+                _logger.LogError(
+                    "Class: {ClassName}\nMethod: {MethodName}\nError: File path is empty",
+                    nameof(MindeeService),
+                    nameof(RecognizeTechnicalPassportAsync));
+
+                return OperationResultGeneric<InferenceFields>.Failure("File path is empty");
+            }
+
             if (!File.Exists(filePath))
             {
-                logger.LogError($"Class: {nameof(MindeeService)}\nMethod: {nameof(RecognizeTechnicalPassportAsync)}\nError: File not found");
-                return OperationResultGeneric<GeneratedV1>.Failure("File not found");
+                _logger.LogError(
+                    "Class: {ClassName}\nMethod: {MethodName}\nError: File not found",
+                    nameof(MindeeService),
+                    nameof(RecognizeTechnicalPassportAsync));
+
+                return OperationResultGeneric<InferenceFields>.Failure("File not found");
             }
 
             var inputSource = new LocalInputSource(filePath);
 
-            CustomEndpoint endpoint = new CustomEndpoint(
-                endpointName: "technicalpassport",
-                accountName: "VitaliyZhyravel",
-                version: "1"
-                );
+            var inferenceParams = new InferenceParameters(
+                modelId: TechnicalPassportModelId,
+                rag: null,
+                rawText: null,
+                polygon: null,
+                confidence: null
+            );
 
-            var apiResponse = await _client.EnqueueAndParseAsync<GeneratedV1>(inputSource,endpoint);
+            var response = await _clientV2.EnqueueAndGetInferenceAsync(inputSource, inferenceParams);
 
-            var generatedFeatures = apiResponse.Document.Inference;
+            var fields = response?.Inference?.Result?.Fields;
 
-            if (generatedFeatures.Prediction.Fields == null)
+            if (fields == null)
             {
-                logger.LogError($"Class: {nameof(MindeeService)}\nMethod: {nameof(RecognizeTechnicalPassportAsync)}\nError: Data converted from photo is empty");
-                return OperationResultGeneric<GeneratedV1>.Failure("Data converted from photos is empty");
+                _logger.LogError(
+                    "Class: {ClassName}\nMethod: {MethodName}\nError: Data converted from photo is empty",
+                    nameof(MindeeService),
+                    nameof(RecognizeTechnicalPassportAsync));
+
+                return OperationResultGeneric<InferenceFields>.Failure("Data converted from photo is empty");
             }
 
-            logger.LogInformation("Technical passport recognized successfully");
-            return OperationResultGeneric<GeneratedV1>.Success(generatedFeatures);
+            _logger.LogInformation(
+                "Class: {ClassName}\nMethod: {MethodName}\nMessage: Technical passport recognized successfully",
+                nameof(MindeeService),
+                nameof(RecognizeTechnicalPassportAsync));
+
+            return OperationResultGeneric<InferenceFields>.Success(fields);
         }
         catch (Exception ex)
         {
-            logger.LogError($"Class: {nameof(MindeeService)}\nMethod: {nameof(RecognizeTechnicalPassportAsync)}\nError: Document processing\nError: {ex.Message}");
-            return OperationResultGeneric<GeneratedV1>.Failure($"{ex.Message}");
+            _logger.LogError(
+                ex,
+                "Class: {ClassName}\nMethod: {MethodName}\nError: Document processing error",
+                nameof(MindeeService),
+                nameof(RecognizeTechnicalPassportAsync));
+
+            return OperationResultGeneric<InferenceFields>.Failure($"Document processing error: {ex.Message}");
         }
     }
 }

@@ -1,10 +1,9 @@
-﻿using TelegramBotConsole.User;
+﻿using TelegramBot.Domain.User;
 using TelegramBotConsole;
 
-namespace TelegramBot.Infrastructure.Interfaces;
+namespace TelegramBot.Application.Interfaces;
 
 public interface IOpenAiService
 {
-    Task<OperationResultGeneric<string>> GenerateInsuranceAsync(UserSession userSession);
     Task<OperationResultGeneric<string>> GenerateReplyToUserQuestion(string userMessage);
 }

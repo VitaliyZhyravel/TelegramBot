@@ -1,4 +1,4 @@
-﻿namespace TelegramBot.Infrastructure.Interfaces;
+﻿namespace TelegramBot.Application.Interfaces;
 
 public interface IPdfGenerator
 {

@@ -2,7 +2,7 @@
 using QuestPDF;
 using QuestPDF.Fluent;
 using QuestPDF.Infrastructure;
-using TelegramBot.Infrastructure.Interfaces;
+using TelegramBot.Application.Interfaces;
 
 namespace TelegramBotConsole.Services;
 

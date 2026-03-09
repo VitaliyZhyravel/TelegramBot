@@ -1,20 +1,27 @@
-﻿using Mindee.Product.Generated;
-using TelegramBot.Domain.Domain;
+﻿using Mindee.Parsing.V2.Field;
+using TelegramBot.Domain.Models;
 
 namespace TelegramBot.Application.Mappings;
 
 public static class TechnicalPassportMapper
 {
-    public static IDocumentData Map(GeneratedV1 dataFromFile)
+    public static IDocumentData Map(InferenceFields fields)
     {
-        var newTechPassport = new TechnicalPassportModel
+        return new TechnicalPassportModel
         {
-            VehicleIdentificationNumber = dataFromFile.Prediction.Fields["vehicle_identification_number"].FirstOrDefault()!.TryGetString("value"),
-            Make = dataFromFile.Prediction.Fields["make"].FirstOrDefault()!.TryGetString("value"),
-            Model = dataFromFile.Prediction.Fields["model"].FirstOrDefault()!.TryGetString("value"),
-            BodyType = dataFromFile.Prediction.Fields["body_type"].FirstOrDefault()!.TryGetString("value")
+            VehicleIdentificationNumber = GetValue(fields,"vehicle_identification_number"),
+            Make = GetValue(fields,"make"),
+            Model = GetValue(fields,"model"),
+            BodyType = GetValue(fields,"body_type"),
         };
+    }
+    private static string? GetValue(InferenceFields fields, string key)
+    {
+        if (!fields.TryGetValue(key, out var field))
+            return null;
 
-        return newTechPassport;
+        var value = field?.SimpleField?.Value?.ToString();
+
+        return string.IsNullOrWhiteSpace(value) ? null : value?.Trim();
     }
 }

@@ -1,8 +1,8 @@
-﻿namespace TelegramBotConsole.User;
+﻿namespace TelegramBot.Domain.User;
 
-public class SessionStorage
+public static class SessionStorage
 {
-    private static Dictionary<long, UserSession> Sessions { get; set; } = new Dictionary<long, UserSession>();
+    private static Dictionary<long, UserSession> Sessions { get; set; } = new ();
 
     public static UserSession GetSession(long userId)
     {

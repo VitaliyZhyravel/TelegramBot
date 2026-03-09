@@ -11,7 +11,7 @@
 
   <ItemGroup>
     <PackageReference Include="Microsoft.VisualStudio.Azure.Containers.Tools.Targets" Version="1.21.0" />
-    <PackageReference Include="Mindee" Version="3.29.0-rc" />
+    <PackageReference Include="Mindee" Version="3.39.0" />
   </ItemGroup>
 
   <ItemGroup>
@@ -19,6 +19,10 @@
     <ProjectReference Include="..\TelegramBot.Domain\TelegramBot.Domain.csproj" />
     <ProjectReference Include="..\TelegramBot.Infrastructure\TelegramBot.Infrastructure.csproj" />
     <ProjectReference Include="..\TelegramBot.SharedKernel\TelegramBot.SharedKernel.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <_ContentIncludedByDefault Remove="wwwroot\PassportBack\.gitkeep.txt" />
   </ItemGroup>
 
 </Project>
